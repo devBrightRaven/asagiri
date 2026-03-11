@@ -15,6 +15,7 @@ const NAV_LINKS = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/kanban", label: "Kanban" },
   { href: "/territory", label: "Territory" },
+  { href: "/sasagani", label: "ささがに" },
   { href: "/settings", label: "Settings" },
 ] as const;
 
