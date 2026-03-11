@@ -114,6 +114,7 @@ export function WebGraph({
       .attr("fill", (d) => threadColorMap[d.threadId] ?? "#888")
       .attr("stroke", "#fff")
       .attr("stroke-width", 1.5)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .call(
         d3
           .drag<SVGCircleElement, Node>()
@@ -130,7 +131,7 @@ export function WebGraph({
             if (!event.active) simulation.alphaTarget(0);
             d.fx = null;
             d.fy = null;
-          }),
+          }) as unknown as (selection: d3.Selection<d3.BaseType, Node, SVGGElement, unknown>) => void,
       );
 
     const label = g
