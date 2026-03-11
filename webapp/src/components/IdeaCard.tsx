@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Star } from "lucide-react";
+import { Star, Network, Check, Loader2 } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 import type { Idea } from "@/lib/types";
 import {
@@ -64,8 +64,77 @@ function ScoreIndicator({
   );
 }
 
+interface SasaganiThread {
+  id: string;
+  name: string;
+  status: string;
+}
+
+type IngestStatus = "idle" | "loading-threads" | "picking" | "sending" | "done" | "error";
+
+function useSasaganiIngest(idea: Idea) {
+  const [status, setStatus] = useState<IngestStatus>("idle");
+  const [threads, setThreads] = useState<SasaganiThread[]>([]);
+  const [errorMsg, setErrorMsg] = useState("");
+
+  const openPicker = async () => {
+    setStatus("loading-threads");
+    setErrorMsg("");
+    try {
+      const res = await fetch("/api/sasagani/threads");
+      if (!res.ok) throw new Error("Failed to load threads");
+      const data: SasaganiThread[] = await res.json();
+      if (data.length === 0) {
+        setErrorMsg("No active threads. Create one in Sasagani first.");
+        setStatus("error");
+        return;
+      }
+      setThreads(data);
+      setStatus("picking");
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : "Unknown error");
+      setStatus("error");
+    }
+  };
+
+  const send = async (threadId: string) => {
+    setStatus("sending");
+    try {
+      const res = await fetch("/api/sasagani/ingest-idea", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          idea_id: idea.id,
+          idea_title: idea.title,
+          idea_one_liner: idea.one_liner,
+          thread_id: threadId,
+        }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || "Failed to send");
+      }
+      setStatus("done");
+      setTimeout(() => setStatus("idle"), 2000);
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : "Unknown error");
+      setStatus("error");
+    }
+  };
+
+  const reset = () => {
+    setStatus("idle");
+    setThreads([]);
+    setErrorMsg("");
+  };
+
+  return { status, threads, errorMsg, openPicker, send, reset };
+}
+
 export function IdeaCard({ idea, isStarred, onToggleStar }: IdeaCardProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [sasaganiOpen, setSasaganiOpen] = useState(false);
+  const sasagani = useSasaganiIngest(idea);
   const prefersReducedMotion = useReducedMotion();
 
   return (
@@ -79,6 +148,23 @@ export function IdeaCard({ idea, isStarred, onToggleStar }: IdeaCardProps) {
           <CardTitle>{idea.title}</CardTitle>
           <CardDescription>{idea.one_liner}</CardDescription>
           <CardAction>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={() => {
+                sasagani.openPicker();
+                setSasaganiOpen(true);
+              }}
+              aria-label={`Send ${idea.title} to Sasagani thread`}
+            >
+              {sasagani.status === "done" ? (
+                <Check className="size-4 text-green-500" aria-hidden="true" />
+              ) : sasagani.status === "sending" || sasagani.status === "loading-threads" ? (
+                <Loader2 className="size-4 animate-spin text-muted-foreground" aria-hidden="true" />
+              ) : (
+                <Network className="size-4 text-muted-foreground" aria-hidden="true" />
+              )}
+            </Button>
             <Button
               variant="ghost"
               size="icon-sm"
@@ -110,6 +196,55 @@ export function IdeaCard({ idea, isStarred, onToggleStar }: IdeaCardProps) {
             <ScoreIndicator label="Feasibility" score={idea.feasibility_score} />
             <ScoreIndicator label="Novelty" score={idea.novelty_score} />
           </div>
+          <Dialog
+            open={sasaganiOpen}
+            onOpenChange={(open) => {
+              setSasaganiOpen(open);
+              if (!open) sasagani.reset();
+            }}
+          >
+            <DialogContent className="sm:max-w-sm">
+              <DialogHeader>
+                <DialogTitle>Send to Sasagani</DialogTitle>
+                <DialogDescription>
+                  Pick a thread to ferment this idea in.
+                </DialogDescription>
+              </DialogHeader>
+              {sasagani.status === "loading-threads" && (
+                <div className="flex items-center justify-center py-4">
+                  <Loader2 className="size-5 animate-spin text-muted-foreground" aria-label="Loading threads" />
+                </div>
+              )}
+              {sasagani.status === "error" && (
+                <p className="text-sm text-destructive py-2" role="alert">{sasagani.errorMsg}</p>
+              )}
+              {sasagani.status === "picking" && (
+                <fieldset className="space-y-2" aria-label="Available threads">
+                  {sasagani.threads.map((thread) => (
+                    <Button
+                      key={thread.id}
+                      variant="outline"
+                      className="w-full justify-start"
+                      onClick={() => {
+                        sasagani.send(thread.id);
+                        setSasaganiOpen(false);
+                      }}
+                    >
+                      <Network className="size-4 mr-2 shrink-0" aria-hidden="true" />
+                      {thread.name}
+                    </Button>
+                  ))}
+                </fieldset>
+              )}
+              {sasagani.status === "sending" && (
+                <div className="flex items-center justify-center py-4">
+                  <Loader2 className="size-5 animate-spin text-muted-foreground" aria-label="Sending" />
+                </div>
+              )}
+              <DialogFooter showCloseButton />
+            </DialogContent>
+          </Dialog>
+
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger
               render={<Button variant="ghost" size="sm" />}
