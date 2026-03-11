@@ -54,3 +54,40 @@ export interface Stats {
   total_domains: number;
   domain_counts: Record<string, number>;
 }
+
+// === Sasagani（ささがに）Types ===
+
+export interface Fragment {
+  id: string;
+  thread_id: string;
+  type: "url" | "text" | "voice";
+  content: string;
+  extracted_content?: string;
+  note?: string;
+  created_at: string;
+}
+
+export interface Thread {
+  id: string;
+  name: string;
+  status: "active" | "archived";
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Connection {
+  id: string;
+  fragment_a: string;
+  fragment_b: string;
+  thread_ids: string[];
+  description: string;
+  strength: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SasaganiData {
+  threads: Thread[];
+  fragments: Fragment[];
+  connections: Connection[];
+}
