@@ -3,3 +3,7 @@ data/
 .next/
 *.env
 .env.*
+__pycache__/
+*.pyc
+*.log
+003-nexusforge/
