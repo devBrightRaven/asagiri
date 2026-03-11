@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=320">
+  <title>Sasagani</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <h1>ささがに</h1>
+  <div id="status" aria-live="polite"></div>
+
+  <section class="thread-selector">
+    <label id="thread-label">丟進哪條線？</label>
+    <div id="threads" role="radiogroup" aria-labelledby="thread-label"></div>
+  </section>
+
+  <section class="input-area">
+    <input
+      id="content-input"
+      type="text"
+      placeholder="碎片內容（文字或網址）"
+      aria-label="碎片內容"
+      autocomplete="off"
+    >
+    <input
+      id="note-input"
+      type="text"
+      placeholder="備註（選填）"
+      aria-label="備註"
+      autocomplete="off"
+    >
+    <div class="button-row">
+      <button id="submit-btn" type="button">丟進去</button>
+      <button id="capture-btn" type="button">擷取當前頁面</button>
+    </div>
+  </section>
+
+  <script src="popup.js"></script>
+</body>
+</html>
