@@ -1,0 +1,45 @@
+---
+tags: [startup-idea, {{ idea.domain | lower | replace("/", "-") | replace(" ", "-") }}{% for tag in idea.tags %}, {{ tag }}{% endfor %}]
+status: reference
+source: agent
+domain: "{{ idea.domain }}"
+feasibility: {{ idea.feasibility_score }}
+novelty: {{ idea.novelty_score }}
+---
+
+# {{ idea.title }}
+
+> {{ idea.one_liner }}
+
+## Problem
+
+{{ idea.problem }}
+
+## Solution
+
+{{ idea.solution }}
+
+## Market Size
+
+{{ idea.market_size }}
+
+## Competitors
+
+{% for c in idea.competitors %}- {{ c }}
+{% endfor %}
+
+## Moat Analysis
+
+{{ idea.moat_analysis }}
+
+## Scores
+
+| Metric | Score |
+|--------|-------|
+| Feasibility | {{ idea.feasibility_score }}/5 |
+| Novelty | {{ idea.novelty_score }}/5 |
+
+## Sources
+
+{% for s in idea.sources %}- {{ s }}
+{% endfor %}

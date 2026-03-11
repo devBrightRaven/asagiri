@@ -1,0 +1,57 @@
+strategy: mixed
+ideas_per_day: 10
+min_domains_per_day: 5
+depth: deep
+
+llm:
+  provider: gemini  # gemini | claude | perplexity
+  model: gemini-2.5-flash  # gemini-2.5-flash | claude-sonnet-4-20250514 | sonar
+
+domains:
+  - AI/ML
+  - Developer Tools
+  - Gaming
+  - FinTech
+  - Health Tech
+  - Education
+  - Creator Economy
+  - Hardware/IoT
+  - Sustainability
+  - B2B SaaS
+  - Consumer Apps
+  - Marketplace
+  - Logistics
+  - Legal Tech
+  - Real Estate Tech
+
+theme_schedule:
+  monday: AI/ML
+  tuesday: Developer Tools
+  wednesday: Gaming
+  thursday: FinTech
+  friday: Health Tech
+  saturday: Creator Economy
+  sunday: mixed
+
+output:
+  data_path: "C:/Code/asagiri/data"
+  vault_ideas_path: "D:/Obsidian/br-os-vault/_startup_radar/ideas"
+  generate_markdown: true
+  generate_json: true
+
+# Purpose lens: abstract values that guide idea generation.
+# Each day, one is selected as the primary lens (80% of ideas).
+# 20% of ideas are pure exploration without a lens.
+# Rotate through the list sequentially by day.
+purpose:
+  lenses:
+    - "human agency: empower individuals to make their own decisions, not be decided for"
+    - "cognitive sovereignty: protect and enhance human attention, memory, and thinking capacity"
+    - "creative autonomy: enable people to express and build without gatekeepers"
+    - "accessible independence: let people with disabilities live without dependency"
+    - "economic self-determination: give individuals control over their financial future"
+  ratio: 0.8  # 80% of ideas use the lens, 20% pure exploration
+
+search:
+  max_sources_per_idea: 3
+  language: "en"
