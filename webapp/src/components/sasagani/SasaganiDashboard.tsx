@@ -6,6 +6,7 @@ import { Plus, X, Check } from "lucide-react";
 import type { SasaganiData, Thread, Fragment } from "@/lib/types";
 import { ThreadPanel } from "./ThreadPanel";
 import { ConnectionList } from "./ConnectionList";
+import { WebGraph } from "./WebGraph";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -255,6 +256,19 @@ export function SasaganiDashboard({ initialData }: SasaganiDashboardProps) {
         <p className="py-12 text-center text-muted-foreground">
           尚無思考線。點擊「新增線」開始織網。
         </p>
+      )}
+
+      {/* Spider web graph */}
+      {data.fragments.length > 0 && (
+        <section className="mt-12" aria-label="蛛網">
+          <h2 className="text-xl font-semibold mb-4">蛛網</h2>
+          <div className="bg-card border-border rounded-lg border p-4">
+            <WebGraph
+              fragments={data.fragments}
+              connections={data.connections}
+            />
+          </div>
+        </section>
       )}
 
       {/* Cross-thread connections */}
