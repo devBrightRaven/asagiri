@@ -3,7 +3,7 @@ import path from "node:path";
 import type { DailyResearch, Interactions, ReviewItem, Stats } from "./types";
 
 const DATA_DIR = process.env.RADAR_DATA_DIR
-  || path.resolve("C:/Code/asagiri/data");
+  || path.resolve("D:/Obsidian/br-os-vault/_asagiri/data");
 
 export async function getAllDates(): Promise<string[]> {
   try {

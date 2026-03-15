@@ -15,8 +15,8 @@ def main() -> None:
     parser.add_argument(
         "--config",
         type=Path,
-        default=Path(__file__).parent.parent / "config.yaml",
-        help="Path to config.yaml",
+        default=Path("D:/Obsidian/br-os-vault/_asagiri/config.yaml"),
+        help="Path to config.yaml (default: vault _asagiri/config.yaml)",
     )
     parser.add_argument(
         "--dry-run",

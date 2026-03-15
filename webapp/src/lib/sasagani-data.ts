@@ -3,7 +3,7 @@ import path from "node:path";
 import type { Connection, Fragment, SasaganiData, Thread } from "./types";
 
 const DATA_DIR = process.env.RADAR_DATA_DIR
-  || path.resolve("C:/Code/asagiri/data");
+  || path.resolve("D:/Obsidian/br-os-vault/_asagiri/data");
 
 const SASAGANI_DIR = path.join(DATA_DIR, "sasagani");
 const DATA_FILE = path.join(SASAGANI_DIR, "data.json");
