@@ -224,8 +224,9 @@ def run_agent_research(config_path: Path) -> DailyResearch:
     dispatch_timeout = int(
         agents_config.get("dispatch_timeout", DEFAULT_DISPATCH_TIMEOUT_SEC)
     )
+    ollama_model = agents_config.get("ollama_model")  # None => fall back to env
 
-    chain = detect_available(min_tier=min_tier)
+    chain = detect_available(min_tier=min_tier, ollama_model=ollama_model)
     if not chain:
         raise AgentError(
             f"No CLI agents available with tier >= {min_tier}. "

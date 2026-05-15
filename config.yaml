@@ -42,10 +42,20 @@ output:
 # Agent-chain config. Presence of this section switches main.py to the
 # new dispatch path (search.py + agents.py). Remove or comment out to
 # fall back to the legacy `llm:` SDK path above.
+#
+# Tier table (hand-curated quality estimate):
+#   claude (Claude Code, Sonnet 4.6 / Opus 4.7) = 10
+#   codex  (codex-cli, GPT-5.3)                 =  9
+#   gemini (gemini-cli, Flash default)          =  7
+#   ollama (local model, varies)                =  6
+#
+# Defaults: min_tier=8 admits claude + codex only. Lower to 7 to add
+# gemini, to 6 to add ollama (also requires OLLAMA_MODEL env var).
 agents:
-  min_tier: 8         # only claude (10) + codex (9) by default; lower to admit gemini/ollama
+  min_tier: 8
   search_n: 8         # number of SearXNG snippets pulled per idea
-  dispatch_timeout: 180  # subprocess timeout per CLI agent call
+  dispatch_timeout: 180  # subprocess timeout per CLI agent call (seconds)
+  # ollama_model: "qwen2.5:7b"  # uncomment to include local ollama in chain
 
 # Purpose lens: abstract values that guide idea generation.
 # Each day, one is selected as the primary lens (80% of ideas).

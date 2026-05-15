@@ -73,14 +73,16 @@ REGISTRY: dict[str, dict] = {
 }
 
 
-def detect_available(min_tier: int = 8) -> list[AgentSpec]:
+def detect_available(min_tier: int = 8, ollama_model: str | None = None) -> list[AgentSpec]:
     """Find CLI agents on PATH meeting the quality bar.
 
     Returns a list of `AgentSpec` sorted by tier descending. ollama is included
-    only when `OLLAMA_MODEL` is set in the environment, because the binary
-    alone is not dispatchable without a model.
+    only when an `ollama_model` is supplied (via this parameter or the
+    `OLLAMA_MODEL` env var) — the binary alone is not dispatchable without
+    a model name.
     """
-    ollama_model = os.environ.get("OLLAMA_MODEL")
+    if ollama_model is None:
+        ollama_model = os.environ.get("OLLAMA_MODEL")
     found: list[AgentSpec] = []
     for name, info in REGISTRY.items():
         if info["tier"] < min_tier:
