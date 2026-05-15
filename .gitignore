@@ -7,3 +7,6 @@ __pycache__/
 *.pyc
 *.log
 003-nexusforge/
+
+# infra: local settings with secrets
+infra/searxng/settings.yml
