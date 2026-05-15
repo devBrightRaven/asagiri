@@ -122,6 +122,8 @@ def dispatch(
                 cmd,
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
                 timeout=timeout,
             )
         except subprocess.TimeoutExpired:
@@ -134,6 +136,13 @@ def dispatch(
         if cp.returncode != 0:
             stderr_tail = (cp.stderr or "").strip().splitlines()[-1:] or [""]
             errors.append(f"{agent.name}: exit {cp.returncode} — {stderr_tail[0]}")
+            continue
+
+        if not cp.stdout:
+            stderr_tail = (cp.stderr or "").strip().splitlines()[-1:] or [""]
+            errors.append(
+                f"{agent.name}: empty stdout (exit {cp.returncode}) — {stderr_tail[0]}"
+            )
             continue
 
         return DispatchResult(agent=agent.name, output=cp.stdout)
