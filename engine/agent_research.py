@@ -24,6 +24,7 @@ import yaml
 from agents import AgentError, AgentSpec, dispatch, detect_available
 from models import DailyResearch, Idea, compute_review_dates
 from search import SearchError, search
+from skill_loader import load_skill
 
 
 # Number of search snippets to feed into the prompt by default.
@@ -59,42 +60,25 @@ def format_search_context(results: list[dict], max_items: int = DEFAULT_SNIPPETS
     return "\n".join(lines)
 
 
+_RESEARCH_SKILL_NAME = "research"
+
+
 def build_research_prompt(
     domain: str,
     search_context: str,
     purpose_lens: str | None,
 ) -> str:
-    """Construct the prompt fed to a CLI agent for one idea."""
-    lens_clause = ""
-    if purpose_lens:
-        lens_clause = (
-            f"\n\nValue lens (mandatory frame): {purpose_lens}\n"
-            f"The startup idea must meaningfully advance this value, not just touch it."
-        )
-    return f"""You are a startup research analyst. Synthesize ONE novel startup idea in the "{domain}" domain.
+    """Construct the prompt fed to a CLI agent for one idea.
 
-Recent web context:
-{search_context}
-
-Use the context to ground your idea in real signals (pain points, trends, market size). Be specific and data-driven; cite at least one URL from the context.{lens_clause}
-
-Output ONLY a single JSON object — no markdown fences, no commentary before or after — with this exact structure:
-
-{{
-  "title": "Concise name for the startup idea",
-  "domain": "{domain}",
-  "one_liner": "One-sentence pitch",
-  "problem": "2-3 paragraphs as one string. Use spaces, no newlines.",
-  "solution": "2-3 paragraphs as one string. Use spaces, no newlines.",
-  "market_size": "TAM / SAM / SOM estimate with reasoning",
-  "competitors": ["competitor1", "competitor2", "competitor3"],
-  "moat_analysis": "What defensibility — network effects, data moats, switching costs?",
-  "feasibility_score": 1-5,
-  "novelty_score": 1-5,
-  "sources": ["url1", "url2"],
-  "tags": ["tag1", "tag2", "tag3"]
-}}
-"""
+    Reads `skills/research/SKILL.md` at call time and renders it with Jinja.
+    Edit that file to change the prompt without touching code.
+    """
+    skill = load_skill(_RESEARCH_SKILL_NAME)
+    return skill.render(
+        domain=domain,
+        search_context=search_context,
+        purpose_lens=purpose_lens,
+    )
 
 
 _JSON_FENCE_RE = re.compile(r"```(?:json)?\s*(.+?)\s*```", re.DOTALL)
