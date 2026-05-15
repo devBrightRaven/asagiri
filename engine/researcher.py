@@ -1,23 +1,50 @@
-"""Asagiri Research Engine.
+"""Asagiri Research Engine — LEGACY SDK PATH (deprecated).
 
-Supports multiple LLM providers: Gemini (free), Claude, Perplexity.
+Supports SDK-based LLM providers: Gemini (free tier), Anthropic Claude,
+Perplexity Sonar. Each provider class is bound to a vendor SDK and pulls
+its own web context via that SDK's grounding/search feature.
+
+DEPRECATED as of refactor/thin-orchestrator. Prefer the new agent chain
+path in `agent_research.run_agent_research`, which dispatches CLI agents
+(claude / codex / gemini-cli / ollama) and decouples web search via
+SearXNG. The new path:
+  * has no vendor SDK dependency
+  * keeps search and generation as separate concerns
+  * falls back across backends without re-running search
+
+This module remains importable so `main.py` can still serve old configs
+that lack an `agents:` section. Plan: remove after 30 days of stable
+chain runs.
 """
 from __future__ import annotations
 
 import json
-import re
 import random
 import time
-from datetime import datetime, date
-from pathlib import Path
+import warnings
 from abc import ABC, abstractmethod
+from datetime import date, datetime
+from pathlib import Path
 
 import yaml
 from dotenv import load_dotenv
 
-from models import Idea, DailyResearch, compute_review_dates
+from models import DailyResearch, Idea, compute_review_dates
 
 load_dotenv()
+
+
+def _emit_legacy_deprecation_once() -> None:
+    """Emit a single DeprecationWarning the first time legacy code path runs."""
+    if getattr(_emit_legacy_deprecation_once, "_emitted", False):
+        return
+    warnings.warn(
+        "researcher.run_research (SDK path) is deprecated; "
+        "add an `agents:` section to config.yaml to use the agent chain.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    _emit_legacy_deprecation_once._emitted = True  # type: ignore[attr-defined]
 
 RESEARCH_PROMPT = """You are a startup research analyst. Research a specific startup opportunity in the "{domain}" domain.
 
@@ -48,10 +75,16 @@ Output ONLY valid JSON (no markdown, no explanation) with this exact structure:
 Be specific, data-driven, and creative. The idea should be novel - not just a copy of existing solutions."""
 
 
-# --- Provider Abstraction ---
+# --- Provider Abstraction (DEPRECATED) ---
+#
+# These provider classes couple LLM generation with vendor-specific web search.
+# Kept for legacy config compatibility. New code should call
+# `agent_research.research_one` instead, which decouples search.py from
+# agents.py and avoids vendor SDK lock-in.
+
 
 class LLMProvider(ABC):
-    """Abstract base for LLM providers with web search."""
+    """Abstract base for LLM providers with web search (deprecated)."""
 
     @abstractmethod
     def research(self, domain: str, purpose_lens: str | None = None) -> str:
@@ -275,7 +308,13 @@ def research_idea(provider: LLMProvider, domain: str, idea_id: str, today_str: s
 
 
 def run_research(config_path: Path) -> DailyResearch:
-    """Run the full daily research pipeline."""
+    """Run the full daily research pipeline (LEGACY SDK path).
+
+    Prefer `agent_research.run_agent_research`. This function is kept for
+    backwards compatibility with configs that still declare an `llm:`
+    provider without an `agents:` section.
+    """
+    _emit_legacy_deprecation_once()
     config = load_config(config_path)
     provider = create_provider(config)
 
