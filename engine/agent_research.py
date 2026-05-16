@@ -20,11 +20,17 @@ from pathlib import Path
 from typing import Sequence
 
 import yaml
+from dotenv import load_dotenv
 
 from agents import AgentError, AgentSpec, dispatch, detect_available
 from models import DailyResearch, Idea, compute_review_dates
 from search import SearchError, search
 from skill_loader import load_skill
+
+# Load engine/.env so BRAVE_API_KEY / SEARXNG_URL / OLLAMA_MODEL etc. are
+# picked up by build_default_chain and detect_available without requiring
+# the runner to set OS env vars by hand.
+load_dotenv()
 
 
 # Number of search snippets to feed into the prompt by default.
