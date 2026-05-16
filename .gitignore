@@ -3,6 +3,8 @@ data/
 .next/
 *.env
 .env.*
+!.env.example
+!**/.env.example
 __pycache__/
 *.pyc
 *.log
