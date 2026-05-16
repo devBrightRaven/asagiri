@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sasagani widget — Asagiri 朝霧</title>
+  <meta name="description" content="Sasagiri — a 7 KB drop-in fragment-capture widget. Floating button, no-flow-break collection, routes to the Asagiri vault.">
+  <link rel="stylesheet" href="assets/shared.css">
+  <style>
+    .demo-stage {
+      margin: var(--space-5) 0;
+      padding: var(--space-5);
+      background: var(--bg-elev);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      min-height: 320px;
+      position: relative;
+      overflow: hidden;
+    }
+    .demo-stage::before {
+      content: "Demo stage — the widget mounts a fixed-position button.";
+      display: block;
+      font-size: 0.8125rem;
+      color: var(--fg-muted);
+      margin-bottom: var(--space-3);
+      font-family: var(--font-mono);
+    }
+    .demo-note {
+      background: var(--bg-sunk);
+      padding: var(--space-3) var(--space-4);
+      border-radius: var(--radius);
+      font-size: 0.9375rem;
+      color: var(--fg-muted);
+    }
+    /* Constrain the widget's fixed positioning to the demo stage if it
+       honours `position: absolute` containers — otherwise it floats over
+       the whole page, which is also acceptable for a demo. */
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <!-- Drifting mist layers, decorative -->
+  <svg class="mist mist-a" aria-hidden="true">
+    <filter id="noise-a"><feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="2" seed="1"/></filter>
+    <rect width="100%" height="100%" filter="url(#noise-a)" opacity="0.5"/>
+  </svg>
+  <svg class="mist mist-b" aria-hidden="true">
+    <filter id="noise-b"><feTurbulence type="fractalNoise" baseFrequency="0.4" numOctaves="3" seed="2"/></filter>
+    <rect width="100%" height="100%" filter="url(#noise-b)" opacity="0.4"/>
+  </svg>
+  <svg class="mist mist-c" aria-hidden="true">
+    <filter id="noise-c"><feTurbulence type="fractalNoise" baseFrequency="0.25" numOctaves="2" seed="3"/></filter>
+    <rect width="100%" height="100%" filter="url(#noise-c)" opacity="0.35"/>
+  </svg>
+
+  <header class="site">
+    <div class="row">
+      <a class="brand" href="./index.html">
+        Asagiri <span class="ja" lang="ja">朝霧</span>
+      </a>
+      <nav class="primary" aria-label="Main">
+        <a href="./index.html">Overview</a>
+        <a href="./architecture.html">Engine</a>
+        <a href="./webapp.html">Webapp</a>
+        <a href="./widget.html" aria-current="page">Widget</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" class="page" tabindex="-1">
+    <p class="meta">widget/ · 28 KB unminified · 7 KB gzipped</p>
+    <h1>Sasagani: capture without breaking flow.</h1>
+    <p class="lede">
+      A floating fragment-input that lives in the corner of any page. Paste a
+      URL, type a half-thought, hit "Drop it in" — the fragment lands in the
+      Asagiri inbox thread and you go back to what you were doing. Preact, no
+      framework dependencies, one script tag, ~7 KB on the wire.
+    </p>
+
+    <section aria-labelledby="install">
+      <h2 id="install">Install</h2>
+      <p>One line, after your body content:</p>
+      <pre><code>&lt;script src="https://your-host/sasagani.js"
+        data-api="http://localhost:3003"&gt;&lt;/script&gt;</code></pre>
+      <p>
+        The <code>data-api</code> attribute points to whichever host serves the
+        webapp's <code>/api/sasagani</code> endpoints. Default fallback is
+        <code>http://localhost:3003</code>.
+      </p>
+    </section>
+
+    <section aria-labelledby="demo">
+      <h2 id="demo">Live UI demo</h2>
+      <div class="callout">
+        <strong>Demo mode.</strong> The widget below is the real bundle, but
+        there is no backend wired into this page — clicking "Drop it in" will
+        log a network error. Open the developer console to see the request it
+        tries to make. Run the webapp locally and re-load to make submission
+        real.
+      </div>
+
+      <div class="demo-stage">
+        <p class="demo-note">
+          The fragment capture button mounts itself in the bottom-right corner of
+          the viewport. Look there. Tab to it with the keyboard; the button is
+          focusable and shows a visible focus ring.
+        </p>
+      </div>
+    </section>
+
+    <section aria-labelledby="behavior">
+      <h2 id="behavior">Behavior</h2>
+      <ol>
+        <li>
+          <strong>Always docked, never blocking.</strong> The button sits in the
+          bottom-right with a small visual footprint. It never overlays content
+          you're reading.
+        </li>
+        <li>
+          <strong>Two-state input.</strong> Click expands a small text panel.
+          Click outside, hit Escape, or hit "Drop it in" to collapse.
+        </li>
+        <li>
+          <strong>URL or text.</strong> Pasted URLs get URL-classified; free
+          text becomes a note fragment. The widget doesn't try to be clever
+          about classification beyond that — that's downstream's job.
+        </li>
+        <li>
+          <strong>Inbox-thread routing.</strong> Every fragment lands in a
+          thread named <code>inbox</code>. The webapp's triage views (kanban,
+          territory) consume from there.
+        </li>
+        <li>
+          <strong>Local-first.</strong> The widget only knows one host. No CDN
+          calls, no analytics, no third-party fonts.
+        </li>
+      </ol>
+    </section>
+
+    <section aria-labelledby="api">
+      <h2 id="api">Backend contract</h2>
+      <p>The widget calls three endpoints:</p>
+      <table>
+        <caption class="visually-hidden">API endpoints used by the widget</caption>
+        <thead>
+          <tr>
+            <th scope="col">Method</th>
+            <th scope="col">Path</th>
+            <th scope="col">Purpose</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row"><code>GET</code></th>
+            <td><code>/api/sasagani/threads</code></td>
+            <td>Lookup or create the active inbox thread</td>
+          </tr>
+          <tr>
+            <th scope="row"><code>POST</code></th>
+            <td><code>/api/sasagani/threads</code></td>
+            <td>Create inbox thread if none exists</td>
+          </tr>
+          <tr>
+            <th scope="row"><code>POST</code></th>
+            <td><code>/api/sasagani/fragments</code></td>
+            <td>Submit a fragment (URL or text)</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        All three are implemented in <code>webapp/src/app/api/sasagani/*</code>.
+        CORS is set there so the widget can be embedded on any origin.
+      </p>
+    </section>
+
+    <section aria-labelledby="bundle">
+      <h2 id="bundle">Bundle</h2>
+      <table>
+        <thead>
+          <tr><th scope="col">Property</th><th scope="col">Value</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">Framework</th><td>Preact (no React runtime)</td></tr>
+          <tr><th scope="row">Build</th><td>Vite + terser, single-file IIFE</td></tr>
+          <tr><th scope="row">Size (raw)</th><td>~28 KB</td></tr>
+          <tr><th scope="row">Size (gzipped)</th><td>~7 KB</td></tr>
+          <tr><th scope="row">Dependencies</th><td>None at runtime</td></tr>
+          <tr><th scope="row">Origin / data flow</th><td>Single configured host; no telemetry</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section aria-labelledby="why">
+      <h2 id="why">Why Preact, not vanilla</h2>
+      <p>
+        Two reasons. First, the input UI grew non-trivially — composition
+        states, paste handling, optimistic UI for submission — and hand-written
+        DOM became a maintenance burden. Second, Preact's render cycle scales
+        to future widgets (review queue, daily digest popup) without rewriting
+        the mount logic. Bundle cost stayed under 10 KB gzipped, which is the
+        ceiling we agreed on for "embeddable anywhere".
+      </p>
+    </section>
+  </main>
+
+  <footer class="site">
+    <p>Widget source: <a href="https://github.com/devBrightRaven/asagiri/tree/master/widget">widget/</a></p>
+  </footer>
+
+  <!-- Real widget bundle. The data-api endpoint won't resolve from this static
+       site, so submission will surface a network error in the console. -->
+  <script src="assets/sasagani.js" data-api="http://localhost:3003"></script>
+</body>
+</html>

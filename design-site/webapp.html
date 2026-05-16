@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Webapp — Asagiri 朝霧</title>
+  <meta name="description" content="The Next.js dashboard for browsing daily Asagiri ideas. Ritual, Dashboard, Kanban, Territory, Settings.">
+  <link rel="stylesheet" href="assets/shared.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <!-- Drifting mist layers, decorative -->
+  <svg class="mist mist-a" aria-hidden="true">
+    <filter id="noise-a"><feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="2" seed="1"/></filter>
+    <rect width="100%" height="100%" filter="url(#noise-a)" opacity="0.5"/>
+  </svg>
+  <svg class="mist mist-b" aria-hidden="true">
+    <filter id="noise-b"><feTurbulence type="fractalNoise" baseFrequency="0.4" numOctaves="3" seed="2"/></filter>
+    <rect width="100%" height="100%" filter="url(#noise-b)" opacity="0.4"/>
+  </svg>
+  <svg class="mist mist-c" aria-hidden="true">
+    <filter id="noise-c"><feTurbulence type="fractalNoise" baseFrequency="0.25" numOctaves="2" seed="3"/></filter>
+    <rect width="100%" height="100%" filter="url(#noise-c)" opacity="0.35"/>
+  </svg>
+
+  <header class="site">
+    <div class="row">
+      <a class="brand" href="./index.html">
+        Asagiri <span class="ja" lang="ja">朝霧</span>
+      </a>
+      <nav class="primary" aria-label="Main">
+        <a href="./index.html">Overview</a>
+        <a href="./architecture.html">Engine</a>
+        <a href="./webapp.html" aria-current="page">Webapp</a>
+        <a href="./widget.html">Widget</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" class="page" tabindex="-1">
+    <p class="meta">webapp/ · Next.js 16 · shadcn/ui · captured 2026-05-16</p>
+    <h1>Five views over the day's ideas.</h1>
+    <p class="lede">
+      The webapp is a local-first dashboard for the engine's output. Same morning
+      mist palette as everything else — near-monochrome, single muted teal accent,
+      Light and Dark modes from one variable set. All screenshots below are full-page
+      captures of the running dev server on Karasuma; the engine hadn't produced
+      today's ideas at capture time, so most counts read zero and the layouts show
+      their empty states.
+    </p>
+
+    <section aria-labelledby="ritual">
+      <h2 id="ritual">Ritual</h2>
+      <p>
+        The entry view. A guided morning flow: read yesterday's reviewed ideas,
+        rate today's fresh batch, schedule the next review checkpoints. When the
+        engine hasn't run yet, the page is honest about it instead of showing a
+        skeleton — "No research data yet for today, run the engine."
+      </p>
+      <figure class="screenshot">
+        <img src="screenshots/home.png" alt="Asagiri ritual view in empty state. Top nav has Asagiri brand on the left with subtitle 'mist raven thinking', center pills for Ritual, Dashboard, Kanban, Territory, Settings, right side shows a flame icon with 0 day streak and a light/dark theme toggle. Centered on a near-black background: 'Asagiri' heading and the message 'No research data yet for today (2026-05-16). Run the research engine to generate today's startup ideas.' Bottom-left corner shows the Next.js dev indicator." width="1440" height="900" loading="lazy">
+        <figcaption>Ritual — empty state when the engine has not run yet today.</figcaption>
+      </figure>
+    </section>
+
+    <section aria-labelledby="dashboard">
+      <h2 id="dashboard">Dashboard</h2>
+      <p>
+        Aggregate view over every idea ever produced. Four KPI cards at the top
+        (Ideas Researched, Day Streak, Domains Covered out of 15, Avg Score), a
+        bar chart of ideas by domain, then a filterable+sortable table of every
+        idea with date, title, domain, feasibility/novelty scores, status, rating.
+        The status pills are a controlled vocabulary — New, Interested,
+        Researching, Passed, Executing — shared with the Kanban view.
+      </p>
+      <figure class="screenshot">
+        <img src="screenshots/dashboard.png" alt="Dashboard page. Heading 'Dashboard — Overview of all researched startup ideas'. Four KPI cards in a row: Ideas Researched 0 with a bulb icon, Day Streak 0 with a flame icon, /15 Domains 0 with a globe icon, Avg Score 0.0 with an upward trend icon. Below: 'Ideas by Domain — No domain data available yet.' Then an 'All Ideas' section with a search input, Domain filter, Status filter pills (All/New/Interested/Researching/Passed/Executing), and a From/To date range. Empty data table with columns Date, Title, Domain, Feasibility, Novelty, Status, Rating, all sortable. Below the headers: 'No ideas match the current filters.'" width="1440" height="900" loading="lazy">
+        <figcaption>Dashboard — KPIs, domain chart, full-history filter table.</figcaption>
+      </figure>
+    </section>
+
+    <section aria-labelledby="kanban">
+      <h2 id="kanban">Kanban</h2>
+      <p>
+        Triage board for moving ideas through the funnel. Inbox at the top
+        (collapsible), then four parallel columns: Interested, Researching,
+        Executing, Passed. Drag-and-drop between columns updates the idea's
+        status in the JSON store. The same vocabulary as the Dashboard's status
+        column — the views stay in sync because they read the same file.
+      </p>
+      <figure class="screenshot">
+        <img src="screenshots/kanban.png" alt="Opportunity Kanban page. Above the columns, a collapsible 'INBOX — 0 UNSORTED' row. Below: four equal-width column cards labelled INTERESTED, RESEARCHING, EXECUTING, PASSED, each with a 0 count in the top-right and otherwise empty. The same top nav and theme controls as other views." width="1440" height="900" loading="lazy">
+        <figcaption>Kanban — Inbox + four funnel columns. Drag to move state.</figcaption>
+      </figure>
+    </section>
+
+    <section aria-labelledby="territory">
+      <h2 id="territory">Territory</h2>
+      <p>
+        Coverage map across the 15 domains the engine cycles through. Grid view
+        shows each domain as a card with idea count; Table view sorts by ideas,
+        feasibility, novelty, or alphabetically. A domain is "uncharted" until it
+        has produced its first idea — useful for spotting blind spots in the
+        rotation.
+      </p>
+      <figure class="screenshot">
+        <img src="screenshots/territory.png" alt="Territory Map page. Heading 'TERRITORY MAP — 0 ideas across 0 explored / 15 total domains'. Right side has a Grid/Table view toggle (Grid is highlighted). Sort-by row with Ideas (active), Feasibility, Novelty, A-Z options. Below the heading 'UNCHARTED (15)': pill chips listing the fifteen domains in two rows — AI/ML, Developer Tools, Gaming, FinTech, Health Tech, Education, Creator Economy, Hardware/IoT, Sustainability, then B2B SaaS, Consumer Apps, Marketplace, Logistics, Legal Tech, Real Estate Tech." width="1440" height="900" loading="lazy">
+        <figcaption>Territory — domain coverage view. Grid or Table. Reveals rotation gaps.</figcaption>
+      </figure>
+    </section>
+
+    <section aria-labelledby="settings">
+      <h2 id="settings">Settings</h2>
+      <p>
+        Key management. Each provider has its own row with a redacted preview
+        of the saved value. Keys are written to <code>engine/.env</code> on the
+        local machine and never leave it.
+      </p>
+      <div class="callout">
+        <strong>Refactor follow-up.</strong> This screenshot still shows the
+        legacy slot list (Gemini / Anthropic / Perplexity). The engine's new
+        agent-chain path doesn't use these keys — it uses CLI agents through
+        your subscription plus <code>BRAVE_API_KEY</code> as optional search
+        fallback. The Settings UI hasn't caught up yet; that's open work on
+        the webapp side, not in the engine refactor.
+      </div>
+      <figure class="screenshot">
+        <img src="screenshots/settings.png" alt="Settings page. Heading 'SETTINGS — Manage your API keys. Keys are stored locally and never sent to external servers.' A panel titled 'API KEYS' with three rows: Google Gemini (GEMINI_API_KEY (Alza…)) with an Add button; Anthropic Claude (ANTHROPIC_API_KEY (sk-ant-…)) with an Add button; Perplexity (PERPLEXITY_API_KEY (pplx-…)) with an Add button. Below the panel: 'Keys are saved to the local .env file. They are never transmitted over the network and are only used by the research engine running on your machine.'" width="1440" height="900" loading="lazy">
+        <figcaption>Settings — local-only key management. Note: still references the legacy SDK providers.</figcaption>
+      </figure>
+    </section>
+
+    <section aria-labelledby="design-notes">
+      <h2 id="design-notes">Design notes</h2>
+      <p>
+        Three deliberate choices visible across all five pages:
+      </p>
+      <ol>
+        <li>
+          <strong>Honest empty states.</strong> Pages that depend on engine
+          output say so directly ("No research data yet for today, run the
+          engine") instead of rendering ghost cards. The empty state is the
+          truthful state until the cron runs.
+        </li>
+        <li>
+          <strong>One accent, one mood.</strong> Muted teal
+          (<code>oklch(0.55 0.10 185)</code> dark, <code>oklch(0.48 0.10 185)</code>
+          light) is the only chromatic colour in the system. No gradients, no
+          glassmorphism, no purple. The interface should feel like a terminal
+          with manners.
+        </li>
+        <li>
+          <strong>Same vocabulary everywhere.</strong> Status names (New,
+          Interested, Researching, Executing, Passed) are identical across
+          Dashboard's filter pills, Kanban's columns, and the JSON store.
+          One controlled vocabulary, surfaced three ways.
+        </li>
+      </ol>
+    </section>
+
+    <section aria-labelledby="stack">
+      <h2 id="stack">Stack</h2>
+      <table>
+        <caption class="visually-hidden">Webapp stack components</caption>
+        <thead>
+          <tr><th scope="col">Layer</th><th scope="col">Choice</th><th scope="col">Reason</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">Framework</th><td>Next.js 16 (App Router, Turbopack)</td><td>Fast dev loop; file-based routing fits the small page count.</td></tr>
+          <tr><th scope="row">UI primitives</th><td>shadcn/ui</td><td>Copy-paste components, full source ownership, accessible defaults.</td></tr>
+          <tr><th scope="row">Styling</th><td>Tailwind v4 + custom tokens</td><td>OKLCH-based palette, dark mode via a single class flip.</td></tr>
+          <tr><th scope="row">Data</th><td>File reads against engine's JSON output</td><td>No DB; the JSON files are the source of truth.</td></tr>
+          <tr><th scope="row">Charts</th><td>Recharts</td><td>Accessible by default, fits the small-data use case.</td></tr>
+          <tr><th scope="row">Build</th><td>pnpm + Turbopack</td><td>Workspace-friendly with the widget submodule.</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <footer class="site">
+    <p>Webapp source: <a href="https://github.com/devBrightRaven/asagiri/tree/master/webapp">webapp/</a></p>
+  </footer>
+</body>
+</html>

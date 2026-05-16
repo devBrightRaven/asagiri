@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Asagiri 朝霧 — Overview</title>
+  <meta name="description" content="Asagiri is a daily startup research engine. Thin orchestrator over CLI agents, local SearXNG, and file-based prompts.">
+  <link rel="stylesheet" href="assets/shared.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <!-- Drifting mist layers, decorative -->
+  <svg class="mist mist-a" aria-hidden="true">
+    <filter id="noise-a"><feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="2" seed="1"/></filter>
+    <rect width="100%" height="100%" filter="url(#noise-a)" opacity="0.5"/>
+  </svg>
+  <svg class="mist mist-b" aria-hidden="true">
+    <filter id="noise-b"><feTurbulence type="fractalNoise" baseFrequency="0.4" numOctaves="3" seed="2"/></filter>
+    <rect width="100%" height="100%" filter="url(#noise-b)" opacity="0.4"/>
+  </svg>
+  <svg class="mist mist-c" aria-hidden="true">
+    <filter id="noise-c"><feTurbulence type="fractalNoise" baseFrequency="0.25" numOctaves="2" seed="3"/></filter>
+    <rect width="100%" height="100%" filter="url(#noise-c)" opacity="0.35"/>
+  </svg>
+
+  <header class="site">
+    <div class="row">
+      <a class="brand" href="./index.html">
+        Asagiri <span class="ja" lang="ja">朝霧</span>
+      </a>
+      <nav class="primary" aria-label="Main">
+        <a href="./index.html" aria-current="page">Overview</a>
+        <a href="./architecture.html">Engine</a>
+        <a href="./webapp.html">Webapp</a>
+        <a href="./widget.html">Widget</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" class="page" tabindex="-1">
+    <p class="meta">2026-05-16 · refactor/thin-orchestrator</p>
+    <h1>Asagiri is a daily startup research engine.</h1>
+    <p class="lede">
+      Every morning it produces ten grounded startup ideas, each tied to live web signal,
+      filed into the vault with a spaced-repetition review schedule. This page indexes
+      the three surfaces of the system: the engine that synthesizes ideas, the webapp
+      that browses them, and the widget that surfaces fragments mid-flow.
+    </p>
+
+    <section aria-labelledby="surfaces">
+      <h2 id="surfaces">The three surfaces</h2>
+
+      <div class="grid">
+        <article class="card">
+          <span class="tag">engine</span>
+          <h3><a href="./architecture.html">Engine</a></h3>
+          <p>
+            Thin orchestrator over four CLI agents (Claude, Codex, Gemini, Ollama),
+            a local SearXNG instance for web context, and Jinja prompts stored as
+            <code>SKILL.md</code> files. No vendor SDK lock-in.
+          </p>
+          <p class="meta">Python · subprocess · Docker</p>
+        </article>
+
+        <article class="card">
+          <span class="tag">webapp</span>
+          <h3><a href="./webapp.html">Webapp</a></h3>
+          <p>
+            A Next.js dashboard for browsing the day's ideas. Kanban for triage,
+            territory for clustering across domains, settings for purpose lenses
+            and theme. Local-first.
+          </p>
+          <p class="meta">Next.js · shadcn/ui · Tailwind</p>
+        </article>
+
+        <article class="card">
+          <span class="tag">widget</span>
+          <h3><a href="./widget.html">Sasagani widget</a></h3>
+          <p>
+            A 7 KB drop-in fragment-capture widget. Lives at the edge of any page;
+            collects half-formed thoughts and routes them back to the vault without
+            interrupting flow.
+          </p>
+          <p class="meta">TypeScript · Vite · standalone bundle</p>
+        </article>
+      </div>
+    </section>
+
+    <section aria-labelledby="principles">
+      <h2 id="principles">Design principles</h2>
+      <ol>
+        <li>
+          <strong>Decouple search from generation.</strong> The engine never asks an
+          LLM to search the web. SearXNG returns snippets; the agent only synthesizes.
+          Failure surfaces stay independent.
+        </li>
+        <li>
+          <strong>CLI over SDK.</strong> Vendor SDKs lock you to one provider's release
+          cycle. CLI agents are interchangeable through subprocess with quality tiers
+          and automatic fallback.
+        </li>
+        <li>
+          <strong>Prompts as files, not code.</strong> Every prompt lives in
+          <code>skills/&lt;name&gt;/SKILL.md</code>. Editing the prompt is a vault
+          change, not a code change.
+        </li>
+        <li>
+          <strong>Local-first.</strong> SearXNG on loopback. Models reached through
+          your subscription. The vault is the source of truth, not a cloud API.
+        </li>
+        <li>
+          <strong>Calm interface.</strong> Near-monochrome with a single muted teal
+          accent. The system reports; it does not perform. Ghost in the Shell, not
+          Blade Runner.
+        </li>
+      </ol>
+    </section>
+
+    <section aria-labelledby="naming">
+      <h2 id="naming">On the name</h2>
+      <p>
+        <span lang="ja">朝霧</span> (<em>asagiri</em>, morning mist) — the moment
+        before the day's shape is decided. Each idea is a possibility that has not
+        yet condensed into commitment. Most will burn off by mid-morning. A few will
+        stay.
+      </p>
+    </section>
+
+    <section aria-labelledby="stack">
+      <h2 id="stack">Stack at a glance</h2>
+      <table>
+        <caption class="visually-hidden">Stack components by layer</caption>
+        <thead>
+          <tr>
+            <th scope="col">Layer</th>
+            <th scope="col">Tool</th>
+            <th scope="col">Why</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">Search</th>
+            <td>SearXNG (self-hosted) + optional Brave fallback</td>
+            <td>Free, no quota, no API key on hot path</td>
+          </tr>
+          <tr>
+            <th scope="row">Generation</th>
+            <td>claude-cli, codex-cli, gemini-cli, ollama</td>
+            <td>Tiered chain; falls through on failure</td>
+          </tr>
+          <tr>
+            <th scope="row">Prompt</th>
+            <td>Jinja-templated <code>SKILL.md</code></td>
+            <td>Edit prompt without touching engine code</td>
+          </tr>
+          <tr>
+            <th scope="row">Storage</th>
+            <td>Obsidian vault (Markdown + JSON)</td>
+            <td>Owns the data; spaced-repetition review built in</td>
+          </tr>
+          <tr>
+            <th scope="row">Browse</th>
+            <td>Next.js webapp + Sasagani widget</td>
+            <td>Dashboard for review, widget for capture</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <footer class="site">
+    <p>Asagiri · <a href="https://github.com/devBrightRaven/asagiri">github.com/devBrightRaven/asagiri</a> · Bright Raven 2026</p>
+  </footer>
+</body>
+</html>

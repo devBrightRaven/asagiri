@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>静謐 Seihitsu — Asagiri direction A</title>
+  <meta name="description" content="Direction A: paper, ink, quiet stillness. Kenya Hara muji-like.">
+  <style>
+    /* === 静謐 Seihitsu — paper-and-ink minimalism ===
+     * Foundation: Kenya Hara / muji aesthetics.
+     * Mood: post-mist clearing. The mist has burned off; what remains is the
+     *       quiet of a page before anything is written on it.
+     * Color: warm washi-paper grey, single accent in wet-stone teal-green.
+     * Animation: barely any. The page is still by design.
+     * Dew: implied as ink-bleed at edges, not literal droplets.
+     */
+    :root {
+      --bg: oklch(0.965 0.005 75);            /* washi paper warm white */
+      --bg-elev: oklch(0.98 0.004 75);
+      --bg-sunk: oklch(0.93 0.006 75);
+      --fg: oklch(0.18 0.005 50);             /* sumi ink, not pure black */
+      --fg-muted: oklch(0.42 0.008 60);
+      --border: oklch(0.86 0.008 75);
+      --border-soft: oklch(0.91 0.005 75);
+      --accent: oklch(0.42 0.06 175);         /* wet stone teal-green */
+      --accent-soft: oklch(0.42 0.06 175 / 8%);
+      --ink-bleed: oklch(0.18 0.005 50 / 12%);
+      --paper-grain: oklch(0.30 0.01 50 / 4%);
+
+      --font-serif: "Shippori Mincho", "Source Han Serif TC", "Noto Serif CJK TC", Georgia, serif;
+      --font-sans: ui-sans-serif, "Inter", "Hiragino Kaku Gothic ProN", sans-serif;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: oklch(0.16 0.008 50);           /* dark sumi paper */
+        --bg-elev: oklch(0.19 0.006 50);
+        --bg-sunk: oklch(0.13 0.008 50);
+        --fg: oklch(0.88 0.003 70);
+        --fg-muted: oklch(0.62 0.005 65);
+        --border: oklch(0.28 0.006 50);
+        --border-soft: oklch(0.22 0.006 50);
+        --accent: oklch(0.62 0.07 175);
+        --accent-soft: oklch(0.62 0.07 175 / 12%);
+        --ink-bleed: oklch(0.88 0.003 70 / 8%);
+      }
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: var(--font-sans);
+      font-size: 17px;
+      line-height: 1.75;
+      letter-spacing: 0.01em;
+      /* paper grain */
+      background-image:
+        radial-gradient(circle at 20% 30%, var(--paper-grain) 0%, transparent 35%),
+        radial-gradient(circle at 80% 70%, var(--paper-grain) 0%, transparent 40%);
+      background-attachment: fixed;
+    }
+    @media (prefers-color-scheme: dark) {
+      body { background-image: none; }
+    }
+    .stage {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: clamp(3rem, 6vw, 6rem) clamp(1.5rem, 4vw, 3rem) 6rem;
+    }
+    .top {
+      display: flex;
+      align-items: baseline;
+      gap: 1rem;
+      margin-bottom: 6rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border-soft);
+    }
+    .mark {
+      font-family: var(--font-serif);
+      font-size: 1.5rem;
+      font-weight: 400;
+      letter-spacing: 0.02em;
+    }
+    .mark .ja { color: var(--fg-muted); font-size: 1.1rem; margin-left: 0.3em; }
+    .direction {
+      margin-left: auto;
+      font-size: 0.8125rem;
+      color: var(--fg-muted);
+      font-family: var(--font-sans);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    h1 {
+      font-family: var(--font-serif);
+      font-weight: 400;
+      font-size: clamp(2rem, 5vw, 3.25rem);
+      line-height: 1.3;
+      margin: 0 0 2rem;
+      letter-spacing: -0.005em;
+    }
+    h1 .quiet { color: var(--fg-muted); }
+    .lede {
+      max-width: 32em;
+      color: var(--fg-muted);
+      font-size: 1.0625rem;
+      margin: 0 0 4rem;
+    }
+    .lede::after {
+      content: "";
+      display: block;
+      width: 2rem;
+      height: 1px;
+      background: var(--accent);
+      margin-top: 2rem;
+    }
+    h2 {
+      font-family: var(--font-serif);
+      font-weight: 400;
+      font-size: 1.375rem;
+      margin: 5rem 0 1.5rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border-soft);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0;
+    }
+    .item {
+      padding: 2rem 0;
+      border-bottom: 1px solid var(--border-soft);
+      display: grid;
+      grid-template-columns: 4rem 1fr;
+      gap: 1.5rem;
+      transition: background-color 600ms ease;
+    }
+    .item:hover {
+      background: var(--accent-soft);
+    }
+    .item .num {
+      font-family: var(--font-serif);
+      color: var(--accent);
+      font-size: 1.25rem;
+      padding-top: 0.1em;
+    }
+    .item h3 {
+      font-family: var(--font-serif);
+      font-weight: 400;
+      font-size: 1.25rem;
+      margin: 0 0 0.5rem;
+    }
+    .item p {
+      margin: 0 0 0.75rem;
+      color: var(--fg-muted);
+    }
+    .item .tag {
+      font-family: var(--font-sans);
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+    .footer-stamp {
+      margin-top: 6rem;
+      padding-top: 3rem;
+      border-top: 1px solid var(--border-soft);
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-size: 0.875rem;
+      color: var(--fg-muted);
+    }
+    .footer-stamp .name { font-family: var(--font-serif); font-size: 1rem; color: var(--fg); }
+
+    @media (prefers-reduced-motion: reduce) {
+      .item { transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="stage">
+    <div class="top">
+      <span class="mark">Asagiri <span class="ja" lang="ja">朝霧</span></span>
+      <span class="direction">Direction A · 静謐</span>
+    </div>
+
+    <h1 lang="ja">
+      朝霧は、<br>
+      <span class="quiet">一日が形を決める前の、</span><br>
+      静かな余白。
+    </h1>
+    <p class="lede">
+      The mist before the day decides its shape. Asagiri is a daily research
+      engine — but its surface is the page after the engine has finished, when
+      ten possibilities sit quietly waiting to be considered. Paper, ink,
+      breath, space.
+    </p>
+
+    <h2>三つの面 / Three surfaces</h2>
+    <div class="grid">
+      <article class="item">
+        <span class="num">一</span>
+        <div>
+          <span class="tag">engine</span>
+          <h3>Engine</h3>
+          <p>Thin orchestrator over four CLI agents. No vendor SDK lock-in.
+             Search and generation kept on separate failure surfaces.</p>
+        </div>
+      </article>
+      <article class="item">
+        <span class="num">二</span>
+        <div>
+          <span class="tag">webapp</span>
+          <h3>Webapp</h3>
+          <p>A Next.js dashboard for browsing the day's ideas. Ritual,
+             Kanban, Territory, Settings — same vocabulary across them all.</p>
+        </div>
+      </article>
+      <article class="item">
+        <span class="num">三</span>
+        <div>
+          <span class="tag">widget</span>
+          <h3>Sasagani widget</h3>
+          <p>A 7 KB drop-in fragment-capture button. Always docked, never
+             blocking. Routes half-formed thoughts back to the vault.</p>
+        </div>
+      </article>
+    </div>
+
+    <div class="footer-stamp">
+      <span><span class="name">朝霧</span> · Bright Raven</span>
+      <span>v 0.4 · 2026</span>
+    </div>
+  </main>
+</body>
+</html>

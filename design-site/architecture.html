@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Engine architecture — Asagiri 朝霧</title>
+  <meta name="description" content="The thin-orchestrator engine: search.py + agents.py + agent_research.py + SKILL.md, with quality-tiered fallback dispatch.">
+  <link rel="stylesheet" href="assets/shared.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <!-- Drifting mist layers, decorative -->
+  <svg class="mist mist-a" aria-hidden="true">
+    <filter id="noise-a"><feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="2" seed="1"/></filter>
+    <rect width="100%" height="100%" filter="url(#noise-a)" opacity="0.5"/>
+  </svg>
+  <svg class="mist mist-b" aria-hidden="true">
+    <filter id="noise-b"><feTurbulence type="fractalNoise" baseFrequency="0.4" numOctaves="3" seed="2"/></filter>
+    <rect width="100%" height="100%" filter="url(#noise-b)" opacity="0.4"/>
+  </svg>
+  <svg class="mist mist-c" aria-hidden="true">
+    <filter id="noise-c"><feTurbulence type="fractalNoise" baseFrequency="0.25" numOctaves="2" seed="3"/></filter>
+    <rect width="100%" height="100%" filter="url(#noise-c)" opacity="0.35"/>
+  </svg>
+
+  <header class="site">
+    <div class="row">
+      <a class="brand" href="./index.html">
+        Asagiri <span class="ja" lang="ja">朝霧</span>
+      </a>
+      <nav class="primary" aria-label="Main">
+        <a href="./index.html">Overview</a>
+        <a href="./architecture.html" aria-current="page">Engine</a>
+        <a href="./webapp.html">Webapp</a>
+        <a href="./widget.html">Widget</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" class="page" tabindex="-1">
+    <p class="meta">refactor/thin-orchestrator · 2026-05-16</p>
+    <h1>Engine: thin orchestrator over CLI agents.</h1>
+    <p class="lede">
+      The old engine pinned three vendor SDKs (Gemini, Claude, Perplexity)
+      and let each one bring its own web search. The new engine does the
+      opposite. It owns no SDK. It owns a router. Each request fans out
+      across whichever CLI agents are on PATH, picks the highest-tier one
+      that returns valid JSON, and falls through cleanly when one fails.
+    </p>
+
+    <section aria-labelledby="why">
+      <h2 id="why">Why the rewrite</h2>
+      <p>Three forces converged:</p>
+      <ol>
+        <li>
+          <strong>Vendor lock.</strong> <code>GeminiProvider</code> used the Google
+          GenAI SDK with <code>google_search</code> grounding. Replacing the
+          provider meant rewriting the search half too, because they were the same
+          method call.
+        </li>
+        <li>
+          <strong>Subscription pricing.</strong> As of 2026-06-15 Claude Code's CLI
+          (<code>claude -p</code>) draws from a flat-rate Agent SDK quota tied to
+          the Pro / Max plan, not API keys. Codex did the same earlier. CLIs became
+          cheaper than API calls for daily-research workloads.
+        </li>
+        <li>
+          <strong>Resilience.</strong> Any single provider's rate limit took the
+          engine down. With four CLIs on PATH, the chain falls through silently.
+        </li>
+      </ol>
+    </section>
+
+    <section aria-labelledby="layers">
+      <h2 id="layers">Layer architecture</h2>
+      <p>
+        Three pure modules, one glue module. Each pure module knows nothing about
+        the others. <code>agent_research.py</code> is the only place where they meet.
+      </p>
+
+      <figure class="diagram">
+        <svg viewBox="0 0 760 400" role="img" aria-labelledby="layers-title layers-desc" xmlns="http://www.w3.org/2000/svg">
+          <title id="layers-title">Engine layer diagram</title>
+          <desc id="layers-desc">
+            main.py at the top calls agent_research.run_agent_research. That
+            function fans out to three independent peers: search.search hits
+            local SearXNG (with optional Brave fallback); skill_loader.load_skill
+            reads skills/research/SKILL.md and renders Jinja; agents.dispatch
+            tries CLI agents in order claude, codex, gemini, ollama. None of
+            search, skill_loader, agents know about each other.
+          </desc>
+
+          <defs>
+            <style>
+              .box { fill: var(--bg-elev); stroke: var(--border); stroke-width: 1.5; }
+              .box-glue { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.5; }
+              .label { fill: var(--fg); font: 600 14px var(--font-sans); }
+              .sublabel { fill: var(--fg-muted); font: 12px var(--font-mono); }
+              .arrow { stroke: var(--fg-muted); stroke-width: 1.5; fill: none; marker-end: url(#arrowhead); }
+              .arrow-down { stroke: var(--accent); stroke-width: 2; fill: none; marker-end: url(#arrowhead-accent); }
+            </style>
+            <marker id="arrowhead" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--fg-muted)" />
+            </marker>
+            <marker id="arrowhead-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--accent)" />
+            </marker>
+          </defs>
+
+          <!-- Top: main.py -->
+          <rect class="box" x="290" y="20" width="180" height="50" rx="6"/>
+          <text class="label" x="380" y="45" text-anchor="middle">main.py</text>
+          <text class="sublabel" x="380" y="62" text-anchor="middle">CLI entry / config router</text>
+
+          <!-- Arrow down to glue -->
+          <path class="arrow-down" d="M 380 70 L 380 110"/>
+
+          <!-- Glue: agent_research -->
+          <rect class="box-glue" x="240" y="115" width="280" height="60" rx="6"/>
+          <text class="label" x="380" y="142" text-anchor="middle">agent_research.py</text>
+          <text class="sublabel" x="380" y="160" text-anchor="middle">orchestration (the only glue layer)</text>
+
+          <!-- Three arrows fanning out -->
+          <path class="arrow" d="M 290 175 Q 200 200 130 230"/>
+          <path class="arrow" d="M 380 175 L 380 230"/>
+          <path class="arrow" d="M 470 175 Q 560 200 630 230"/>
+
+          <!-- Three peers -->
+          <rect class="box" x="20" y="235" width="220" height="60" rx="6"/>
+          <text class="label" x="130" y="262" text-anchor="middle">search.py</text>
+          <text class="sublabel" x="130" y="280" text-anchor="middle">SearXNG + Brave fallback</text>
+
+          <rect class="box" x="280" y="235" width="200" height="60" rx="6"/>
+          <text class="label" x="380" y="262" text-anchor="middle">skill_loader.py</text>
+          <text class="sublabel" x="380" y="280" text-anchor="middle">SKILL.md → Jinja render</text>
+
+          <rect class="box" x="520" y="235" width="220" height="60" rx="6"/>
+          <text class="label" x="630" y="262" text-anchor="middle">agents.py</text>
+          <text class="sublabel" x="630" y="280" text-anchor="middle">CLI subprocess dispatch</text>
+
+          <!-- External resources at bottom -->
+          <path class="arrow" d="M 130 295 L 130 330"/>
+          <path class="arrow" d="M 630 295 L 630 330"/>
+
+          <rect class="box" x="40" y="335" width="180" height="50" rx="6"/>
+          <text class="sublabel" x="130" y="357" text-anchor="middle">localhost:8888</text>
+          <text class="sublabel" x="130" y="372" text-anchor="middle">Docker SearXNG</text>
+
+          <rect class="box" x="540" y="335" width="180" height="50" rx="6"/>
+          <text class="sublabel" x="630" y="357" text-anchor="middle">claude → codex → gemini</text>
+          <text class="sublabel" x="630" y="372" text-anchor="middle">→ ollama (on PATH)</text>
+        </svg>
+        <figcaption>
+          The teal block is the only place modules meet. Replace any peer (e.g.
+          swap SearXNG for Kagi, swap subprocess for HTTP) without touching the
+          others.
+        </figcaption>
+      </figure>
+    </section>
+
+    <section aria-labelledby="dispatch">
+      <h2 id="dispatch">Dispatch chain</h2>
+      <p>
+        <code>agents.dispatch</code> walks a list of <code>AgentSpec</code> in tier
+        order. Failure modes are normalised: non-zero exit, timeout, empty stdout,
+        OSError all funnel into the same "this one lost, try the next" path. Errors
+        accumulate; only when every agent in the chain fails does an
+        <code>AgentError</code> surface.
+      </p>
+
+      <figure class="diagram">
+        <svg viewBox="0 0 760 270" role="img" aria-labelledby="dispatch-title dispatch-desc" xmlns="http://www.w3.org/2000/svg">
+          <title id="dispatch-title">Dispatch fallback flow</title>
+          <desc id="dispatch-desc">
+            Linear chain: claude tier 10 first, on failure codex tier 9, on failure
+            gemini tier 7 if min_tier permits, on failure ollama tier 6 if a model
+            is configured. Each agent has the same three failure paths (timeout,
+            non-zero exit, empty stdout) all of which fall through to the next.
+          </desc>
+
+          <defs>
+            <style>
+              .tier-box { fill: var(--bg-elev); stroke: var(--border); stroke-width: 1.5; }
+              .tier-label { fill: var(--fg); font: 600 13px var(--font-sans); }
+              .tier-meta { fill: var(--fg-muted); font: 11px var(--font-mono); }
+              .ok-arrow { stroke: var(--accent); stroke-width: 2; fill: none; marker-end: url(#ok-head); }
+              .fail-arrow { stroke: var(--fg-muted); stroke-width: 1.2; fill: none; stroke-dasharray: 4 3; marker-end: url(#fail-head); }
+              .ok-label { fill: var(--accent); font: 600 11px var(--font-mono); }
+              .fail-label { fill: var(--fg-muted); font: 11px var(--font-mono); }
+            </style>
+            <marker id="ok-head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--accent)" />
+            </marker>
+            <marker id="fail-head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--fg-muted)" />
+            </marker>
+          </defs>
+
+          <!-- Four tier boxes in a row -->
+          <rect class="tier-box" x="20" y="80" width="160" height="60" rx="6"/>
+          <text class="tier-label" x="100" y="105" text-anchor="middle">claude -p</text>
+          <text class="tier-meta" x="100" y="125" text-anchor="middle">tier 10 · Sonnet 4.6</text>
+
+          <rect class="tier-box" x="210" y="80" width="160" height="60" rx="6"/>
+          <text class="tier-label" x="290" y="105" text-anchor="middle">codex exec</text>
+          <text class="tier-meta" x="290" y="125" text-anchor="middle">tier 9 · GPT-5.3</text>
+
+          <rect class="tier-box" x="400" y="80" width="160" height="60" rx="6"/>
+          <text class="tier-label" x="480" y="105" text-anchor="middle">gemini -p</text>
+          <text class="tier-meta" x="480" y="125" text-anchor="middle">tier 7 · Flash</text>
+
+          <rect class="tier-box" x="590" y="80" width="160" height="60" rx="6"/>
+          <text class="tier-label" x="670" y="105" text-anchor="middle">ollama run</text>
+          <text class="tier-meta" x="670" y="125" text-anchor="middle">tier 6 · local model</text>
+
+          <!-- Fallback arrows between -->
+          <path class="fail-arrow" d="M 180 110 L 210 110"/>
+          <path class="fail-arrow" d="M 370 110 L 400 110"/>
+          <path class="fail-arrow" d="M 560 110 L 590 110"/>
+
+          <text class="fail-label" x="195" y="102" text-anchor="middle">fail</text>
+          <text class="fail-label" x="385" y="102" text-anchor="middle">fail</text>
+          <text class="fail-label" x="575" y="102" text-anchor="middle">fail</text>
+
+          <!-- OK arrows down to success node -->
+          <path class="ok-arrow" d="M 100 140 L 100 195"/>
+          <path class="ok-arrow" d="M 290 140 L 290 195"/>
+          <path class="ok-arrow" d="M 480 140 L 480 195"/>
+          <path class="ok-arrow" d="M 670 140 L 670 195"/>
+
+          <text class="ok-label" x="115" y="170">ok</text>
+          <text class="ok-label" x="305" y="170">ok</text>
+          <text class="ok-label" x="495" y="170">ok</text>
+          <text class="ok-label" x="685" y="170">ok</text>
+
+          <!-- Success bar -->
+          <rect x="20" y="195" width="730" height="36" rx="6" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+          <text class="tier-label" x="385" y="218" text-anchor="middle">DispatchResult(agent=&lt;name&gt;, output=…)</text>
+
+          <!-- Header labels -->
+          <text class="tier-meta" x="20" y="40">min_tier=8 default · gemini and ollama gated out</text>
+          <text class="tier-meta" x="20" y="58">lower min_tier to 6 + set OLLAMA_MODEL to broaden the chain</text>
+        </svg>
+        <figcaption>
+          Dashed grey arrows are failure paths (timeout, non-zero exit, empty
+          stdout, OSError — all normalised). Solid teal arrows are the success
+          exit. <code>min_tier=8</code> default keeps the bottom two agents on
+          standby for explicit configuration.
+        </figcaption>
+      </figure>
+    </section>
+
+    <section aria-labelledby="search">
+      <h2 id="search">Search: SearXNG + optional Brave</h2>
+      <p>
+        <code>search.search()</code> returns a list of plain dicts
+        <code>{title, url, snippet, engine}</code>. The first backend is a local
+        SearXNG Docker container at <code>127.0.0.1:8888</code>; if it's down or
+        every upstream engine is suspended, the chain falls to Brave (when
+        <code>BRAVE_API_KEY</code> is set). When every backend fails it raises
+        <code>SearchError</code> — the caller can choose to either skip the idea
+        or proceed with empty context.
+      </p>
+      <pre><code># Failure path: search down, chain still produces an idea
+search_results = []
+try:
+    search_results = search(query, n=8)
+except SearchError:
+    search_results = []  # prompt notes "no live web results available"
+prompt = build_research_prompt(domain, format_search_context(search_results), lens)
+dispatch(prompt, chain, timeout=180)</code></pre>
+      <div class="callout">
+        <strong>Why not have the LLM search?</strong> Search and generation are
+        different failure surfaces. Coupling them makes a search problem look like
+        a generation problem and vice versa. Decoupling lets you debug them
+        independently and swap them independently.
+      </div>
+    </section>
+
+    <section aria-labelledby="skill">
+      <h2 id="skill">Skills: prompts as files</h2>
+      <p>
+        The research prompt lives at
+        <code>engine/skills/research/SKILL.md</code> as YAML-frontmatter + Jinja
+        body. The frontmatter follows the same shape as Claude Code skills, so a
+        skill written here is one move from being a Claude Code plugin skill.
+      </p>
+      <pre><code>---
+name: research
+description: Synthesize one novel startup idea from a domain + web context.
+inputs:
+  - domain: string
+  - search_context: string
+  - purpose_lens: string | null
+output_format: json
+version: 1
+---
+
+You are a startup research analyst. Synthesize ONE novel startup
+idea in the "{{ domain }}" domain.
+
+Recent web context:
+{{ search_context }}
+{% if purpose_lens %}
+
+Value lens (mandatory frame): {{ purpose_lens }}
+{% endif %}
+
+Output ONLY a single JSON object …</code></pre>
+      <p>
+        Editing the file changes engine behavior on the next run. No code change,
+        no redeploy. Verified by mutating the file mid-process and re-rendering.
+      </p>
+    </section>
+
+    <section aria-labelledby="failure">
+      <h2 id="failure">Failure modes</h2>
+      <table>
+        <caption class="visually-hidden">Failure modes and how the engine handles them</caption>
+        <thead>
+          <tr>
+            <th scope="col">Failure</th>
+            <th scope="col">Surface</th>
+            <th scope="col">Behavior</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">SearXNG container down</th>
+            <td>search.py</td>
+            <td>Try Brave; else prompt notes "no live results"; agent synthesizes from prior knowledge</td>
+          </tr>
+          <tr>
+            <th scope="row">Upstream engine suspended (e.g. Brave CAPTCHA)</th>
+            <td>SearXNG</td>
+            <td>Other engines still return; only impact is fewer snippets</td>
+          </tr>
+          <tr>
+            <th scope="row">Claude rate-limited / quota exhausted</th>
+            <td>agents.py</td>
+            <td>Non-zero exit; chain falls to codex; idea still produced</td>
+          </tr>
+          <tr>
+            <th scope="row">Subprocess timeout (default 180s)</th>
+            <td>agents.py</td>
+            <td>Normalised to failure; next agent gets the prompt</td>
+          </tr>
+          <tr>
+            <th scope="row">Agent returns invalid JSON</th>
+            <td>agent_research.py</td>
+            <td>parse_idea_response raises; idea skipped, others continue</td>
+          </tr>
+          <tr>
+            <th scope="row">No agents on PATH</th>
+            <td>main.py</td>
+            <td>Hard fail with explicit error message at startup</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section aria-labelledby="tests">
+      <h2 id="tests">Test surface</h2>
+      <p>
+        56 tests, 1 live-integration test gated on
+        <code>RUN_INTEGRATION=1</code>. Tests are biased toward the orchestration
+        seams (mocked subprocess.run, mocked httpx.get) because that's where most
+        bugs live; the live test is a smoke check that the whole pipe works.
+      </p>
+      <table>
+        <thead>
+          <tr><th scope="col">Module</th><th scope="col">Tests</th><th scope="col">Focus</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">search.py</th><td>12 + 1</td><td>Backend protocol, fallback ordering, error surfaces</td></tr>
+          <tr><th scope="row">agents.py</th><td>19</td><td>Detection by tier, dispatch fallback, encoding, empty-stdout-as-failure</td></tr>
+          <tr><th scope="row">agent_research.py</th><td>14</td><td>Prompt building, JSON parse tolerance, search-fail degradation</td></tr>
+          <tr><th scope="row">skill_loader.py</th><td>9</td><td>Frontmatter parsing, Jinja rendering, strict undefined</td></tr>
+          <tr><th scope="row">agents extras</th><td>2 + 3</td><td>ollama_model arg precedence, UTF-8 encoding regression</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section aria-labelledby="changelog">
+      <h2 id="changelog">Refactor timeline</h2>
+      <ol>
+        <li><strong>Stage 1.</strong> Self-hosted SearXNG in Docker, loopback only.</li>
+        <li><strong>Stage 2.</strong> <code>search.py</code> with pluggable backend chain.</li>
+        <li><strong>Stage 3.</strong> <code>agents.py</code> with subprocess dispatch + tier table.</li>
+        <li><strong>Stage 4.</strong> <code>main.py</code> rewired; <code>agent_research.py</code> as the only glue.</li>
+        <li><strong>Stage 5.</strong> Legacy SDK path marked deprecated (kept importable).</li>
+        <li><strong>Stage 6.</strong> Config-driven ollama model, tier table in <code>config.yaml</code>.</li>
+        <li><strong>Stage 7.</strong> Prompt extracted to <code>skills/research/SKILL.md</code>.</li>
+      </ol>
+    </section>
+  </main>
+
+  <footer class="site">
+    <p>Engine source: <a href="https://github.com/devBrightRaven/asagiri/tree/refactor/thin-orchestrator/engine">engine/</a> on branch <code>refactor/thin-orchestrator</code></p>
+  </footer>
+</body>
+</html>

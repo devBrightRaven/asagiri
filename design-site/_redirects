@@ -1,0 +1,12 @@
+# Clean URLs without the .html extension
+/architecture     /architecture.html      301
+/webapp           /webapp.html            301
+/widget           /widget.html            301
+
+# Old paths some external docs may link to
+/engine           /architecture.html      301
+/dashboard        /webapp.html            301
+/sasagani         /widget.html            301
+
+# Explore directory (alternative design directions, kept for reference)
+/explore          /explore/index.html     302
