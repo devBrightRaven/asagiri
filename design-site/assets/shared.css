@@ -388,6 +388,35 @@ figure.diagram svg { display: block; max-width: 100%; height: auto; }
 }
 .callout strong { color: var(--accent); }
 
+/* === Screens grid (real-session captures) === */
+.screens-grid {
+  display: grid;
+  /* min(Npx, 100%) prevents the fixed 280px min from overflowing
+     viewports < 320px wide (WCAG 1.4.10 Reflow). */
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+  gap: var(--space-4);
+  margin: var(--space-4) 0;
+}
+.screens-grid figure {
+  margin: 0;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--bg-soft);
+}
+.screens-grid figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-bottom: 1px solid var(--border-soft);
+}
+.screens-grid figcaption {
+  padding: var(--space-2) var(--space-3);
+  font-size: 0.85rem;
+  color: var(--fg-muted);
+  line-height: 1.45;
+}
+
 /* === Footer === */
 footer.site {
   position: relative;

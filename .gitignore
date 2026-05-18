@@ -12,3 +12,7 @@ __pycache__/
 
 # infra: local settings with secrets
 infra/searxng/settings.yml
+
+# widget — built artifacts and deps live outside source control
+widget/node_modules/
+widget/dist/

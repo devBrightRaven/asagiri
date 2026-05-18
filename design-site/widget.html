@@ -80,32 +80,70 @@
 
     <section aria-labelledby="install">
       <h2 id="install">Install</h2>
-      <p>One line, after your body content:</p>
-      <pre><code>&lt;script src="https://your-host/sasagani.js"
-        data-api="http://localhost:3003"&gt;&lt;/script&gt;</code></pre>
+      <p>Three modes, selected by the <code>data-api</code> attribute:</p>
+      <pre><code>&lt;!-- Public demo: localStorage only, nothing leaves the browser --&gt;
+&lt;script src="https://your-host/sasagani.js"&gt;&lt;/script&gt;
+
+&lt;!-- Local webapp: hits webapp running on your machine --&gt;
+&lt;script src="..." data-api="http://localhost:3003"&gt;&lt;/script&gt;
+
+&lt;!-- Cloudflare-Access-gated tunnel: cross-device, authenticated --&gt;
+&lt;script src="..." data-api="https://asagiri-api.brightraven.world"&gt;&lt;/script&gt;</code></pre>
       <p>
-        The <code>data-api</code> attribute points to whichever host serves the
-        webapp's <code>/api/sasagani</code> endpoints. Default fallback is
-        <code>http://localhost:3003</code>.
+        When <code>data-api</code> is missing or set to <code>"demo"</code>, the
+        widget uses a localStorage backend — useful for showcases. When pointed
+        at a real webapp, the bundle sends <code>credentials: 'include'</code>
+        so Cloudflare Access cookies ride along. A 401/403 surfaces a dedicated
+        owner-only notice instead of a generic connection error.
       </p>
     </section>
 
     <section aria-labelledby="demo">
-      <h2 id="demo">Live UI demo</h2>
+      <h2 id="demo">Try it — live demo</h2>
       <div class="callout">
-        <strong>Demo mode.</strong> The widget below is the real bundle, but
-        there is no backend wired into this page — clicking "Drop it in" will
-        log a network error. Open the developer console to see the request it
-        tries to make. Run the webapp locally and re-load to make submission
-        real.
+        <strong>Fully playable.</strong> The widget below is the real bundle
+        in demo mode (no <code>data-api</code> set). Drop a URL, type a
+        thought, watch the connections form. Fragments are kept in your
+        browser's localStorage only — refresh the page and they stay, clear
+        site data and they're gone. Nothing is sent anywhere.
       </div>
 
       <div class="demo-stage">
         <p class="demo-note">
-          The fragment capture button mounts itself in the bottom-right corner of
-          the viewport. Look there. Tab to it with the keyboard; the button is
-          focusable and shows a visible focus ring.
+          The 48&times;48 floating button appears bottom-right. Drag it to
+          reposition. Click to expand the panel. Try pasting an article URL,
+          then paste another with overlapping wording — a connection line
+          will draw between them in the mini-web visualization.
         </p>
+      </div>
+    </section>
+
+    <section aria-labelledby="screens">
+      <h2 id="screens">Captures from a real session</h2>
+      <p>
+        Screenshots from running sasagani against the production Asagiri
+        webapp. The flow is the same as the demo above; the differences are
+        persistence (real SQLite on your machine instead of localStorage) and
+        AI-generated connection descriptions (Gemini summarises why two
+        fragments relate, replacing the demo's naive shared-word heuristic).
+      </p>
+      <div class="screens-grid">
+        <figure>
+          <img src="screenshots/home.png" alt="Asagiri ritual view in empty state, with the top nav (Ritual, Dashboard, Kanban, Territory, Settings) and a 0-day streak indicator." loading="lazy">
+          <figcaption>Webapp empty state — before sasagani has fed any fragments in.</figcaption>
+        </figure>
+        <figure>
+          <img src="screenshots/dashboard.png" alt="Dashboard with four KPI cards (Ideas Researched, Day Streak, /15 Domains, Avg Score) and a filterable table of all ideas." loading="lazy">
+          <figcaption>Dashboard — fragments processed by the engine surface as scored ideas.</figcaption>
+        </figure>
+        <figure>
+          <img src="screenshots/kanban.png" alt="Opportunity Kanban with an Inbox row and four columns: Interested, Researching, Executing, Passed." loading="lazy">
+          <figcaption>Kanban triage — drag fragments through the funnel.</figcaption>
+        </figure>
+        <figure>
+          <img src="screenshots/territory.png" alt="Territory Map showing fifteen domain pills (AI/ML, Developer Tools, Gaming, FinTech, …) with Uncharted (15) header." loading="lazy">
+          <figcaption>Territory map — which domains the inbox spans.</figcaption>
+        </figure>
       </div>
     </section>
 
@@ -208,8 +246,10 @@
     <p>Widget source: <a href="https://github.com/devBrightRaven/asagiri/tree/master/widget">widget/</a></p>
   </footer>
 
-  <!-- Real widget bundle. The data-api endpoint won't resolve from this static
-       site, so submission will surface a network error in the console. -->
-  <script src="assets/sasagani.js" data-api="http://localhost:3003"></script>
+  <!-- Live widget in demo mode. No data-api -> LocalStorageAPI; everything
+       stays in this browser. To use against the real Asagiri webapp, set
+       data-api to either http://localhost:3003 (local) or the public
+       Cloudflare-Access-gated tunnel URL. -->
+  <script src="assets/sasagani.js"></script>
 </body>
 </html>
