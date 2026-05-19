@@ -84,17 +84,20 @@
       <pre><code>&lt;!-- Public demo: localStorage only, nothing leaves the browser --&gt;
 &lt;script src="https://your-host/sasagani.js"&gt;&lt;/script&gt;
 
-&lt;!-- Local webapp: hits webapp running on your machine --&gt;
+&lt;!-- Local webapp: hits webapp running on your own machine --&gt;
 &lt;script src="..." data-api="http://localhost:3003"&gt;&lt;/script&gt;
 
-&lt;!-- Cloudflare-Access-gated tunnel: cross-device, authenticated --&gt;
-&lt;script src="..." data-api="https://asagiri-api.brightraven.world"&gt;&lt;/script&gt;</code></pre>
+&lt;!-- Gateway (Cloudflare-Access-gated): cross-device, authenticated --&gt;
+&lt;script src="..." data-api="https://api.brightraven.world/asagiri"&gt;&lt;/script&gt;</code></pre>
       <p>
         When <code>data-api</code> is missing or set to <code>"demo"</code>, the
         widget uses a localStorage backend — useful for showcases. When pointed
         at a real webapp, the bundle sends <code>credentials: 'include'</code>
         so Cloudflare Access cookies ride along. A 401/403 surfaces a dedicated
-        owner-only notice instead of a generic connection error.
+        owner-only notice instead of a generic connection error. The gateway
+        URL (third mode) routes through a single shared <code>api.brightraven.world</code>
+        hostname with Caddy path-prefix dispatch internally; new tools plug in
+        at <code>/&lt;tool&gt;/</code> without any DNS change.
       </p>
     </section>
 
