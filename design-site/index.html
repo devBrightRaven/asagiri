@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Asagiri 朝霧 — Overview</title>
-  <meta name="description" content="Asagiri is a daily startup research engine. Thin orchestrator over CLI agents, local SearXNG, and file-based prompts.">
-  <link rel="stylesheet" href="assets/shared.css">
+  <title>Asagiri 朝霧 — 互動展示 · 朝霧捲軸（絵巻）</title>
+  <meta name="description" content="Asagiri 是一個每日自動產出新創點子的研究引擎。本頁以一幅可展開的東亞卷軸（絵巻）敘事說明架構、重播今日生成、並提供站長控制台原型。">
+  <link rel="stylesheet" href="assets/app.css">
 </head>
 <body>
-  <a class="skip-link" href="#main">Skip to main content</a>
+  <a class="skip-link" href="#main">跳至主要內容 / Skip to main content</a>
 
   <!-- Drifting mist layers, decorative -->
   <svg class="mist mist-a" aria-hidden="true">
@@ -26,151 +26,733 @@
 
   <header class="site">
     <div class="row">
-      <a class="brand" href="./index.html">
+      <a class="brand" href="#main">
         Asagiri <span class="ja" lang="ja">朝霧</span>
       </a>
-      <nav class="primary" aria-label="Main">
-        <a href="./index.html" aria-current="page">Overview</a>
-        <a href="./architecture.html">Engine</a>
-        <a href="./webapp.html">Webapp</a>
-        <a href="./widget.html">Widget</a>
+      <nav class="primary" aria-label="頁面章節 / Sections">
+        <a href="#architecture">架構 / Architecture</a>
+        <a href="#demo">生成演練 / Demo</a>
+        <a href="#owner">站長控制台 / Owner</a>
       </nav>
     </div>
   </header>
 
+  <!-- =====================================================================
+       THE SCROLL / 卷軸
+       .scroll-mount = the full mounted hanging-scroll object.
+       Order top->bottom: 天杆 top rod + 掛繩 cord + 題簽 title slip,
+       then the 畫心 painting field (the reading column, real content),
+       then 地軸 bottom roller with 軸頭 knobs.
+       The .scroll-field is what "unrolls" on load.
+       ===================================================================== -->
+  <div class="scroll-mount" data-scroll>
+
+    <!-- 天杆 top rod + 掛繩 hanging cord + 題簽 title slip (decorative chrome) -->
+    <div class="scroll-top" aria-hidden="true">
+      <span class="cord cord-l"></span>
+      <span class="cord cord-r"></span>
+      <div class="top-rod">
+        <span class="knob knob-l"></span>
+        <span class="knob knob-r"></span>
+        <!-- 題簽 title slip: vertical decorative title only -->
+        <div class="title-slip">
+          <span class="slip-title" lang="ja">朝霧</span>
+          <span class="slip-sub">捲軸</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 畫心 painting field — the mounting border wraps the reading column -->
+    <div class="scroll-field">
+      <div class="mounting">
+
   <main id="main" class="page" tabindex="-1">
-    <p class="meta">2026-05-16 · refactor/thin-orchestrator</p>
-    <h1>Asagiri is a daily startup research engine.</h1>
-    <p class="lede">
-      Every morning it produces ten grounded startup ideas, each tied to live web signal,
-      filed into the vault with a spaced-repetition review schedule. This page indexes
-      the three surfaces of the system: the engine that synthesizes ideas, the webapp
-      that browses them, and the widget that surfaces fragments mid-flow.
-    </p>
 
-    <section aria-labelledby="surfaces">
-      <h2 id="surfaces">The three surfaces</h2>
+    <!-- ============================ HERO ============================ -->
+    <section class="section hero" aria-labelledby="hero-title">
+      <p class="meta">朝霧捲軸 · 絵巻 emaki</p>
+      <span class="ja-large" lang="ja" aria-hidden="true">朝霧</span>
+      <h1 id="hero-title">每天清晨，<span class="glow">十個尚未凝結</span>的新創點子。</h1>
+      <p class="lede">
+        Asagiri（朝霧，morning mist，指天亮前那層尚未散去的薄霧）是一台每日自動運行的新創點子研究引擎。
+        每晚它調度一條 CLI agent 鏈、向本機 SearXNG 搜尋網路訊號，再綜合出十個有根據的新創點子，
+        寫進 <code>data/&lt;日期&gt;/ideas.json</code>，隔天早上由 webapp 瀏覽。
+        像晨霧，多數點子會在中午前蒸發，少數會留下來。
+      </p>
+      <p class="scroll-cue"><span class="dot" aria-hidden="true"></span> 往下展開卷軸，跟著一次完整的生成過程</p>
+    </section>
 
-      <div class="grid">
-        <article class="card">
-          <span class="tag">engine</span>
-          <h3><a href="./architecture.html">Engine</a></h3>
-          <p>
-            Thin orchestrator over four CLI agents (Claude, Codex, Gemini, Ollama),
-            a local SearXNG instance for web context, and Jinja prompts stored as
-            <code>SKILL.md</code> files. No vendor SDK lock-in.
-          </p>
-          <p class="meta">Python · subprocess · Docker</p>
-        </article>
+    <!-- 雲斷 mist scene-break: hero -> architecture (decorative) -->
+    <div class="scene-break" aria-hidden="true">
+      <svg class="mist-band" viewBox="0 0 1200 90" preserveAspectRatio="none" focusable="false">
+        <defs>
+          <filter id="cloud-blur-1"><feGaussianBlur stdDeviation="3"/></filter>
+        </defs>
+        <g class="band-drift" filter="url(#cloud-blur-1)">
+          <path d="M-60 50 q120 -34 240 -6 q120 28 240 0 q120 -28 240 -4 q120 24 240 0 q120 -24 240 -2 q120 22 240 6 v60 h-1320 z"/>
+          <path class="band-2" d="M-60 64 q150 -22 300 -2 q150 20 300 0 q150 -20 300 -2 q150 18 300 4 v40 h-1320 z"/>
+        </g>
+      </svg>
+    </div>
 
-        <article class="card">
-          <span class="tag">webapp</span>
-          <h3><a href="./webapp.html">Webapp</a></h3>
-          <p>
-            A Next.js dashboard for browsing the day's ideas. Kanban for triage,
-            territory for clustering across domains, settings for purpose lenses
-            and theme. Local-first.
-          </p>
-          <p class="meta">Next.js · shadcn/ui · Tailwind</p>
-        </article>
+    <!-- ======================= ARCHITECTURE ======================= -->
+    <section class="section scene" id="architecture" aria-labelledby="arch-title">
+      <p class="scene-mark">
+        <span class="seal seal-scene" aria-hidden="true">
+          <svg viewBox="0 0 60 60" focusable="false"><use href="#seal-glyph-yi"/></svg>
+        </span>
+        <span class="scene-no">其一 / Scene I</span>
+      </p>
+      <h2 id="arch-title" class="brush-head">架構：一條薄的調度層 / The thin orchestrator</h2>
+      <p class="lede">
+        舊引擎綁死三家廠商 SDK，每家還各自帶一套網路搜尋。新引擎反過來：它不擁有任何 SDK，
+        只擁有一個路由器。搜尋與生成是兩個獨立的失敗面，刻意解耦，可以各自除錯、各自抽換。
+      </p>
 
-        <article class="card">
-          <span class="tag">widget</span>
-          <h3><a href="./widget.html">Sasagani widget</a></h3>
-          <p>
-            A 7 KB drop-in fragment-capture widget. Lives at the edge of any page;
-            collects half-formed thoughts and routes them back to the vault without
-            interrupting flow.
-          </p>
-          <p class="meta">TypeScript · Vite · standalone bundle</p>
-        </article>
+      <!-- Data flow strip: engine -> ideas.json -> webapp -->
+      <div class="flow-strip" role="img"
+           aria-label="資料流：engine 引擎產出 ideas.json，webapp 再讀取 ideas.json 顯示。">
+        <div class="flow-node">
+          <p class="kicker">batch · nightly</p>
+          <h3>engine/</h3>
+          <p>Python。每晚透過 <code>run-nightly.bat</code> 跑 agent 鏈，綜合出點子。沒有 HTTP API。</p>
+        </div>
+        <span class="flow-arrow" aria-hidden="true">→</span>
+        <div class="flow-node">
+          <p class="kicker">artifact</p>
+          <h3>ideas.json</h3>
+          <p>當天的產物，落在 <code>data/&lt;日期&gt;/</code>。每個點子含問題、解法、市場、護城河、分數、來源。</p>
+        </div>
+        <span class="flow-arrow" aria-hidden="true">→</span>
+        <div class="flow-node">
+          <p class="kicker">read-only UI</p>
+          <h3>webapp/</h3>
+          <p>Next.js 16。dashboard、kanban、territory、settings，純讀取 JSON、本機優先。</p>
+        </div>
+      </div>
+
+      <p>
+        引擎內部是三個互不相識的純模組，加一層膠水。下面這幅 <strong>橫向絵巻</strong> 把完整管線
+        從左到右畫成一幅手卷：領域挑選 → agent 鏈 → SearXNG → 綜合 → ideas.json → webapp。
+        用鍵盤方向鍵、拖曳、或捲動可在這條手卷裡左右移動。
+      </p>
+
+      <!-- ===== Horizontal 絵巻 pipeline strip =====
+           Labeled, keyboard-scrollable region; vertical fallback <=640px. -->
+      <figure class="emaki" aria-labelledby="emaki-cap">
+        <div class="emaki-viewport" id="emaki-viewport"
+             role="region"
+             aria-label="管線橫向手卷 / Pipeline handscroll — 用方向鍵或拖曳左右捲動 / scroll horizontally with arrow keys or drag"
+             tabindex="0">
+          <svg class="emaki-strip" viewBox="0 0 1640 300" role="img"
+               aria-labelledby="emaki-title emaki-desc" xmlns="http://www.w3.org/2000/svg">
+            <title id="emaki-title">Asagiri 生成管線手卷 / Asagiri generation pipeline handscroll</title>
+            <desc id="emaki-desc">
+              由左至右的六個場景：第一，依 config.yaml 的策略挑選十個領域槽位；
+              第二，agent 鏈依品質分級嘗試 claude、codex、gemini、ollama 四個 CLI agent；
+              第三，search.py 向本機 SearXNG（127.0.0.1:8888，Brave 為備援）抓網路訊號；
+              第四，agent_research.py 把領域、搜尋脈絡與 SKILL.md 渲染出的 prompt 綜合成點子；
+              第五，產物寫進 data 當日資料夾下的 ideas.json；
+              第六，webapp 純讀取 ideas.json 並以 dashboard、kanban、territory 呈現。
+            </desc>
+            <defs>
+              <style>
+                .e-card { fill: var(--paper-deep); stroke: var(--silk-edge); stroke-width: 1.5; }
+                .e-glue { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.5; }
+                .e-num  { fill: var(--seal); font: 700 13px var(--font-mono); }
+                .e-title{ fill: var(--ink); font: 600 16px var(--font-display); }
+                .e-sub  { fill: var(--ink-muted); font: 11.5px var(--font-mono); }
+                .e-flow { stroke: var(--silk-edge); stroke-width: 2; fill: none; marker-end: url(#e-arrow); }
+              </style>
+              <marker id="e-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--silk-edge)" />
+              </marker>
+            </defs>
+
+            <!-- connecting brush baseline -->
+            <path class="e-flow" d="M 60 150 H 1580"/>
+
+            <!-- scene 1: domain select -->
+            <rect class="e-card" x="40"  y="80" width="220" height="140" rx="10"/>
+            <text class="e-num"   x="60"  y="112">壱</text>
+            <text class="e-title" x="60"  y="140">挑選領域</text>
+            <text class="e-sub"   x="60"  y="162">domain select</text>
+            <text class="e-sub"   x="60"  y="182">config.yaml · strategy</text>
+            <text class="e-sub"   x="60"  y="200">10 槽位 / slots</text>
+
+            <!-- scene 2: agent chain -->
+            <rect class="e-glue" x="300" y="80" width="240" height="140" rx="10"/>
+            <text class="e-num"   x="320" y="112">弐</text>
+            <text class="e-title" x="320" y="140">agent 鏈</text>
+            <text class="e-sub"   x="320" y="162">claude → codex</text>
+            <text class="e-sub"   x="320" y="182">→ gemini → ollama</text>
+            <text class="e-sub"   x="320" y="200">tiered dispatch</text>
+
+            <!-- scene 3: SearXNG -->
+            <rect class="e-card" x="580" y="80" width="220" height="140" rx="10"/>
+            <text class="e-num"   x="600" y="112">参</text>
+            <text class="e-title" x="600" y="140">SearXNG</text>
+            <text class="e-sub"   x="600" y="162">search.py</text>
+            <text class="e-sub"   x="600" y="182">127.0.0.1:8888</text>
+            <text class="e-sub"   x="600" y="200">Brave fallback</text>
+
+            <!-- scene 4: synthesis -->
+            <rect class="e-glue" x="840" y="80" width="240" height="140" rx="10"/>
+            <text class="e-num"   x="860" y="112">肆</text>
+            <text class="e-title" x="860" y="140">綜合</text>
+            <text class="e-sub"   x="860" y="162">agent_research.py</text>
+            <text class="e-sub"   x="860" y="182">SKILL.md → Jinja</text>
+            <text class="e-sub"   x="860" y="200">synthesis</text>
+
+            <!-- scene 5: ideas.json -->
+            <rect class="e-card" x="1120" y="80" width="220" height="140" rx="10"/>
+            <text class="e-num"   x="1140" y="112">伍</text>
+            <text class="e-title" x="1140" y="140">ideas.json</text>
+            <text class="e-sub"   x="1140" y="162">artifact</text>
+            <text class="e-sub"   x="1140" y="182">data/&lt;date&gt;/</text>
+            <text class="e-sub"   x="1140" y="200">10 ideas</text>
+
+            <!-- scene 6: webapp -->
+            <rect class="e-card" x="1380" y="80" width="220" height="140" rx="10"/>
+            <text class="e-num"   x="1400" y="112">陸</text>
+            <text class="e-title" x="1400" y="140">webapp</text>
+            <text class="e-sub"   x="1400" y="162">Next.js 16</text>
+            <text class="e-sub"   x="1400" y="182">read-only UI</text>
+            <text class="e-sub"   x="1400" y="200">dashboard · kanban</text>
+          </svg>
+        </div>
+        <span class="emaki-edge emaki-edge-l" aria-hidden="true"></span>
+        <span class="emaki-edge emaki-edge-r" aria-hidden="true"></span>
+        <figcaption id="emaki-cap">
+          橫向手卷：管線六景由左至右展開。<span class="emaki-hint">← → 方向鍵或拖曳可捲動 ·
+          視窗 ≤ 640px 時自動改為直向堆疊。</span>
+        </figcaption>
+      </figure>
+
+      <p>
+        想看引擎內部三個對等模組如何被同一層膠水串起，下面這張靜態分層圖標出全部細節：
+      </p>
+
+      <!-- Annotated diagram of the engine internals (vertical, unchanged meaning) -->
+      <figure class="diagram">
+        <svg viewBox="0 0 760 400" role="img" aria-labelledby="layers-title layers-desc" xmlns="http://www.w3.org/2000/svg">
+          <title id="layers-title">引擎分層圖 / Engine layer diagram</title>
+          <desc id="layers-desc">
+            最上層 main.py 呼叫 agent_research.run_agent_research。該函式向三個彼此獨立的對等模組扇出：
+            search.py 打本機 SearXNG（Brave 為備援）；skill_loader.py 讀 skills/research/SKILL.md 並做 Jinja 渲染；
+            agents.py 依序嘗試 CLI agent：claude、codex、gemini、ollama。search、skill_loader、agents 三者互不相識，
+            只有 agent_research.py 同時認識它們。
+          </desc>
+          <defs>
+            <style>
+              .box { fill: var(--paper-deep); stroke: var(--silk-edge); stroke-width: 1.5; }
+              .box-glue { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.5; }
+              .label { fill: var(--ink); font: 600 14px var(--font-sans); }
+              .sublabel { fill: var(--ink-muted); font: 12px var(--font-mono); }
+              .arrow { stroke: var(--silk-edge); stroke-width: 1.5; fill: none; marker-end: url(#arrowhead); }
+              .arrow-down { stroke: var(--accent); stroke-width: 2; fill: none; marker-end: url(#arrowhead-accent); }
+            </style>
+            <marker id="arrowhead" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--silk-edge)" />
+            </marker>
+            <marker id="arrowhead-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--accent)" />
+            </marker>
+          </defs>
+          <rect class="box" x="290" y="20" width="180" height="50" rx="6"/>
+          <text class="label" x="380" y="45" text-anchor="middle">main.py</text>
+          <text class="sublabel" x="380" y="62" text-anchor="middle">CLI entry / config router</text>
+          <path class="arrow-down" d="M 380 70 L 380 110"/>
+          <rect class="box-glue" x="240" y="115" width="280" height="60" rx="6"/>
+          <text class="label" x="380" y="142" text-anchor="middle">agent_research.py</text>
+          <text class="sublabel" x="380" y="160" text-anchor="middle">orchestration (the only glue layer)</text>
+          <path class="arrow" d="M 290 175 Q 200 200 130 230"/>
+          <path class="arrow" d="M 380 175 L 380 230"/>
+          <path class="arrow" d="M 470 175 Q 560 200 630 230"/>
+          <rect class="box" x="20" y="235" width="220" height="60" rx="6"/>
+          <text class="label" x="130" y="262" text-anchor="middle">search.py</text>
+          <text class="sublabel" x="130" y="280" text-anchor="middle">SearXNG + Brave fallback</text>
+          <rect class="box" x="280" y="235" width="200" height="60" rx="6"/>
+          <text class="label" x="380" y="262" text-anchor="middle">skill_loader.py</text>
+          <text class="sublabel" x="380" y="280" text-anchor="middle">SKILL.md → Jinja render</text>
+          <rect class="box" x="520" y="235" width="220" height="60" rx="6"/>
+          <text class="label" x="630" y="262" text-anchor="middle">agents.py</text>
+          <text class="sublabel" x="630" y="280" text-anchor="middle">CLI subprocess dispatch</text>
+          <path class="arrow" d="M 130 295 L 130 330"/>
+          <path class="arrow" d="M 630 295 L 630 330"/>
+          <rect class="box" x="40" y="335" width="180" height="50" rx="6"/>
+          <text class="sublabel" x="130" y="357" text-anchor="middle">localhost:8888</text>
+          <text class="sublabel" x="130" y="372" text-anchor="middle">Docker SearXNG</text>
+          <rect class="box" x="540" y="335" width="180" height="50" rx="6"/>
+          <text class="sublabel" x="630" y="357" text-anchor="middle">claude → codex → gemini</text>
+          <text class="sublabel" x="630" y="372" text-anchor="middle">→ ollama (on PATH)</text>
+        </svg>
+        <figcaption>
+          青色那塊是唯一讓三個模組相遇的地方。任一對等層都可整顆抽換
+          （把 SearXNG 換成 Kagi、把 subprocess 換成 HTTP），其他層不受影響。
+        </figcaption>
+      </figure>
+
+      <h3>四個階段，點開看細節</h3>
+      <div class="stages">
+        <details class="stage">
+          <summary>
+            <span class="num" aria-hidden="true">1</span>
+            <span class="summary-text">挑選領域 / Domain selection
+              <span class="sub">agent_research._select_domains</span>
+            </span>
+            <svg class="chev" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 3l6 5-6 5" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+          </summary>
+          <div class="body">
+            <p>
+              依 <code>config.yaml</code> 的 strategy 與 theme_schedule，每天從領域池洗牌挑出十個槽位
+              （themed 日會把一半灌進當日主題，其餘隨機）。當天還會依年內日序輪選一個「purpose lens」價值透鏡，
+              讓部分點子帶上特定框架，其餘維持純探索。
+            </p>
+          </div>
+        </details>
+
+        <details class="stage">
+          <summary>
+            <span class="num" aria-hidden="true">2</span>
+            <span class="summary-text">抓網路訊號 / Web context
+              <span class="sub">search.search → SearXNG (Brave fallback)</span>
+            </span>
+            <svg class="chev" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 3l6 5-6 5" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+          </summary>
+          <div class="body">
+            <p>
+              針對每個領域組查詢，先打本機 SearXNG（<code>127.0.0.1:8888</code> 的 Docker 容器），
+              回傳純 dict 清單 <code>{title, url, snippet, engine}</code>。SearXNG 掛掉或上游引擎全被擋時，
+              落到 Brave（需 <code>BRAVE_API_KEY</code>）。全部失敗則 prompt 標註「無即時網路結果」，agent 改用既有知識綜合。
+            </p>
+            <div class="callout">
+              <strong>為什麼不讓 LLM 自己搜尋？</strong> 搜尋與生成是不同的失敗面。耦合起來會讓搜尋問題長得像生成問題、反之亦然。
+              解耦才能各自除錯、各自抽換。
+            </div>
+          </div>
+        </details>
+
+        <details class="stage">
+          <summary>
+            <span class="num" aria-hidden="true">3</span>
+            <span class="summary-text">渲染 prompt / Prompt as a file
+              <span class="sub">skill_loader.load_skill('research')</span>
+            </span>
+            <svg class="chev" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 3l6 5-6 5" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+          </summary>
+          <div class="body">
+            <p>
+              研究 prompt 是一個檔案，住在 <code>engine/skills/research/SKILL.md</code>：YAML frontmatter + Jinja body。
+              把領域、搜尋脈絡、價值透鏡填進去渲染出最終 prompt。改這個檔案，下一次運行行為就變，不用改任何程式碼、不用重新部署。
+            </p>
+          </div>
+        </details>
+
+        <details class="stage">
+          <summary>
+            <span class="num" aria-hidden="true">4</span>
+            <span class="summary-text">調度 agent 鏈 / Tiered dispatch
+              <span class="sub">agents.dispatch · claude → codex → gemini → ollama</span>
+            </span>
+            <svg class="chev" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 3l6 5-6 5" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+          </summary>
+          <div class="body">
+            <p>
+              <code>agents.dispatch</code> 依品質分級（claude t10 → codex t9 → gemini t7 → ollama t6）逐一嘗試。
+              所有失敗模式（非零退出、逾時、空 stdout、OSError）都正規化成同一條「這個輸了，換下一個」的路徑。
+              預設 <code>min_tier=8</code> 只放行 claude 與 codex。最後把 agent 回傳的 JSON 解析成一個 Idea，
+              寫進當天的 <code>ideas.json</code>。
+            </p>
+          </div>
+        </details>
       </div>
     </section>
 
-    <section aria-labelledby="principles">
-      <h2 id="principles">Design principles</h2>
-      <ol>
-        <li>
-          <strong>Decouple search from generation.</strong> The engine never asks an
-          LLM to search the web. SearXNG returns snippets; the agent only synthesizes.
-          Failure surfaces stay independent.
-        </li>
-        <li>
-          <strong>CLI over SDK.</strong> Vendor SDKs lock you to one provider's release
-          cycle. CLI agents are interchangeable through subprocess with quality tiers
-          and automatic fallback.
-        </li>
-        <li>
-          <strong>Prompts as files, not code.</strong> Every prompt lives in
-          <code>skills/&lt;name&gt;/SKILL.md</code>. Editing the prompt is a vault
-          change, not a code change.
-        </li>
-        <li>
-          <strong>Local-first.</strong> SearXNG on loopback. Models reached through
-          your subscription. The vault is the source of truth, not a cloud API.
-        </li>
-        <li>
-          <strong>Calm interface.</strong> Near-monochrome with a single muted teal
-          accent. The system reports; it does not perform. Ghost in the Shell, not
-          Blade Runner.
-        </li>
-      </ol>
-    </section>
+    <!-- 雲斷 mist scene-break: architecture -> generation (decorative) -->
+    <div class="scene-break" aria-hidden="true">
+      <svg class="mist-band" viewBox="0 0 1200 90" preserveAspectRatio="none" focusable="false">
+        <defs>
+          <filter id="cloud-blur-2"><feGaussianBlur stdDeviation="3"/></filter>
+        </defs>
+        <g class="band-drift band-drift-rev" filter="url(#cloud-blur-2)">
+          <path d="M-60 50 q120 -28 240 -2 q120 24 240 0 q120 -26 240 -6 q120 26 240 2 q120 -22 240 0 q120 24 240 4 v60 h-1320 z"/>
+          <path class="band-2" d="M-60 62 q150 -20 300 0 q150 18 300 -2 q150 -18 300 0 q150 20 300 2 v40 h-1320 z"/>
+        </g>
+      </svg>
+    </div>
 
-    <section aria-labelledby="naming">
-      <h2 id="naming">On the name</h2>
-      <p>
-        <span lang="ja">朝霧</span> (<em>asagiri</em>, morning mist) — the moment
-        before the day's shape is decided. Each idea is a possibility that has not
-        yet condensed into commitment. Most will burn off by mid-morning. A few will
-        stay.
+    <!-- ===================== GENERATION DEMO ===================== -->
+    <section class="section scene" id="demo" aria-labelledby="demo-title">
+      <p class="scene-mark">
+        <span class="seal seal-scene" aria-hidden="true">
+          <svg viewBox="0 0 60 60" focusable="false"><use href="#seal-glyph-er"/></svg>
+        </span>
+        <span class="scene-no">其二 / Scene II</span>
       </p>
+      <h2 id="demo-title" class="brush-head">生成演練 / Watch today's run</h2>
+      <p class="lede">
+        真正的引擎一晚才跑完。這裡用今天（2026-05-31）真實的 <code>ideas.json</code> 在瀏覽器端重播一次：
+        先串流 agent 鏈的每一步，再讓十張真實點子卡像晨露凝結般一張張顯現。完全離線、不呼叫任何後端。
+      </p>
+
+      <div class="demo-shell">
+        <div class="demo-launch">
+          <button type="button" class="btn btn-primary btn-lg" id="watch-btn">
+            觀看今天的生成 / Watch today's run
+          </button>
+          <button type="button" class="btn btn-ghost btn-sm" id="reset-btn" hidden>
+            重置演練 / Reset
+          </button>
+          <p class="hint" id="demo-hint">
+            開啟「減少動態效果」(prefers-reduced-motion) 時，會略過動畫直接顯示全部結果。
+          </p>
+        </div>
+
+        <!-- Streaming agent-chain step log -->
+        <div class="run-log" id="run-log" aria-live="polite" aria-busy="false"
+             aria-label="agent 鏈執行步驟串流 / Agent-chain run log"></div>
+
+        <div class="run-status-bar" id="run-status" hidden>
+          <span id="run-status-text">就緒 / idle</span>
+          <span class="progress-track" aria-hidden="true"><span class="progress-fill" id="progress-fill"></span></span>
+          <span id="run-count" aria-hidden="true">0 / 10</span>
+        </div>
+      </div>
+
+      <!-- Real idea cards materialize here, one by one -->
+      <div class="ideas-stream" id="ideas-stream" aria-live="polite" aria-busy="false"
+           aria-label="生成出的新創點子 / Generated startup ideas"></div>
     </section>
 
-    <section aria-labelledby="stack">
-      <h2 id="stack">Stack at a glance</h2>
-      <table>
-        <caption class="visually-hidden">Stack components by layer</caption>
-        <thead>
-          <tr>
-            <th scope="col">Layer</th>
-            <th scope="col">Tool</th>
-            <th scope="col">Why</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <th scope="row">Search</th>
-            <td>SearXNG (self-hosted) + optional Brave fallback</td>
-            <td>Free, no quota, no API key on hot path</td>
-          </tr>
-          <tr>
-            <th scope="row">Generation</th>
-            <td>claude-cli, codex-cli, gemini-cli, ollama</td>
-            <td>Tiered chain; falls through on failure</td>
-          </tr>
-          <tr>
-            <th scope="row">Prompt</th>
-            <td>Jinja-templated <code>SKILL.md</code></td>
-            <td>Edit prompt without touching engine code</td>
-          </tr>
-          <tr>
-            <th scope="row">Storage</th>
-            <td>Obsidian vault (Markdown + JSON)</td>
-            <td>Owns the data; spaced-repetition review built in</td>
-          </tr>
-          <tr>
-            <th scope="row">Browse</th>
-            <td>Next.js webapp + Sasagani widget</td>
-            <td>Dashboard for review, widget for capture</td>
-          </tr>
-        </tbody>
-      </table>
+    <!-- 雲斷 mist scene-break: generation -> owner (decorative) -->
+    <div class="scene-break" aria-hidden="true">
+      <svg class="mist-band" viewBox="0 0 1200 90" preserveAspectRatio="none" focusable="false">
+        <defs>
+          <filter id="cloud-blur-3"><feGaussianBlur stdDeviation="3"/></filter>
+        </defs>
+        <g class="band-drift" filter="url(#cloud-blur-3)">
+          <path d="M-60 52 q120 -30 240 -4 q120 26 240 0 q120 -24 240 -4 q120 22 240 2 q120 -24 240 0 q120 26 240 6 v60 h-1320 z"/>
+          <path class="band-2" d="M-60 64 q150 -22 300 -2 q150 20 300 0 q150 -20 300 -2 q150 18 300 4 v40 h-1320 z"/>
+        </g>
+      </svg>
+    </div>
+
+    <!-- ======================== OWNER ZONE ======================== -->
+    <section class="section scene" id="owner" aria-labelledby="owner-title">
+      <p class="scene-mark">
+        <span class="seal seal-scene" aria-hidden="true">
+          <svg viewBox="0 0 60 60" focusable="false"><use href="#seal-glyph-san"/></svg>
+        </span>
+        <span class="scene-no">其三 / Scene III</span>
+      </p>
+      <h2 id="owner-title" class="brush-head">站長控制台 / Owner controls</h2>
+      <p class="lede">
+        以上每個點子，站長可以決定下一步。解鎖後，每張卡會長出站長操作，主要的一個是
+        「進行 MVP 製作 / Build MVP」。下面是一道僅供原型展示的密碼閘。
+      </p>
+
+      <div class="gate" id="gate">
+        <!-- Lock form -->
+        <form class="lock-form" id="lock-form" novalidate>
+          <p>輸入站長密碼以解鎖控制項。</p>
+          <div class="field-row">
+            <label for="admin-pass">
+              站長密碼 / Admin password
+              <input type="password" id="admin-pass" name="admin-pass"
+                     autocomplete="off" inputmode="text"
+                     aria-describedby="gate-msg stub-note" required>
+            </label>
+            <button type="submit" class="btn btn-primary">解鎖 / Unlock</button>
+          </div>
+          <p class="gate-msg" id="gate-msg" role="status" aria-live="polite"></p>
+          <p class="stub-note" id="stub-note">
+            <strong>原型佔位，非真實驗證。</strong>
+            密碼是寫死的 <code>asagiri-admin</code>，全程在瀏覽器端比對，沒有後端、沒有 session、沒有任何安全性。
+            真實版本會走伺服器端身分驗證。This is a prototype stub, not real authentication.
+          </p>
+        </form>
+
+        <!-- Unlocked panel -->
+        <div class="unlocked-panel" id="unlocked-panel">
+          <p><strong>已解鎖。</strong> 每張點子卡下方已出現站長操作。你也可以從這裡觸發一次新的生成（同樣是佔位）。</p>
+          <div class="row">
+            <button type="button" class="btn btn-primary" id="run-gen-btn">
+              重新生成今日點子 / Run new generation
+            </button>
+            <button type="button" class="btn btn-ghost btn-sm" id="lock-btn">
+              鎖回 / Lock
+            </button>
+          </div>
+          <p class="stub-note">
+            這些操作都是佔位 stub：不會真的呼叫引擎（引擎要跑一整晚），只會顯示確認對話框與通知。
+          </p>
+        </div>
+      </div>
     </section>
+
   </main>
 
+      </div><!-- /.mounting -->
+    </div><!-- /.scroll-field -->
+
+    <!-- 地軸 bottom roller with 軸頭 knobs (decorative) -->
+    <div class="scroll-bottom" aria-hidden="true">
+      <div class="bottom-roller">
+        <span class="knob knob-l"></span>
+        <span class="knob knob-r"></span>
+      </div>
+    </div>
+
+  </div><!-- /.scroll-mount -->
+
   <footer class="site">
-    <p>Asagiri · <a href="https://github.com/devBrightRaven/asagiri">github.com/devBrightRaven/asagiri</a> · Bright Raven 2026</p>
+    <p>
+      Asagiri · 朝霧捲軸（絵巻 emaki）· single-scroll handscroll narrative ·
+      資料來源：真實 <code>data/2026-05-31/ideas.json</code> ·
+      <a href="https://github.com/devBrightRaven/asagiri">github.com/devBrightRaven/asagiri</a>
+    </p>
   </footer>
+
+  <!-- Build-MVP confirmation dialog (native) -->
+  <dialog id="confirm-dialog" aria-labelledby="dialog-title" aria-describedby="dialog-desc">
+    <h3 id="dialog-title">進行 MVP 製作？ / Build MVP?</h3>
+    <p id="dialog-desc">
+      準備為 <strong id="dialog-target">這個點子</strong> 排入 MVP 製作佇列。這是原型佔位，
+      不會真的啟動任何建置流程。確認要排入嗎？
+    </p>
+    <form method="dialog" class="dialog-actions">
+      <button type="submit" value="cancel" class="btn btn-ghost" id="dialog-cancel">取消 / Cancel</button>
+      <button type="submit" value="confirm" class="btn btn-primary" id="dialog-confirm">確認排入 / Queue build</button>
+    </form>
+  </dialog>
+
+  <!-- Toast region (role=status injected at runtime) -->
+  <div class="toast-region" id="toast-region"></div>
+
+  <!-- ===== Reusable seal-stamp glyphs (印章), decorative defs =====
+       Each seal: a carved square frame with a stylized glyph cut from it,
+       drawn with fill-rule even-odd so the paper shows THROUGH the strokes. -->
+  <svg width="0" height="0" class="seal-defs" aria-hidden="true" focusable="false" style="position:absolute">
+    <defs>
+      <g id="seal-glyph-yi">
+        <path fill-rule="evenodd" d="M4 4 h52 v52 h-52 z
+          M14 18 h32 v5 h-32 z M27 18 h6 v26 h-6 z M14 39 h32 v5 h-32 z"/>
+      </g>
+      <g id="seal-glyph-er">
+        <path fill-rule="evenodd" d="M4 4 h52 v52 h-52 z
+          M14 20 h32 v5 h-32 z M14 36 h32 v5 h-32 z"/>
+      </g>
+      <g id="seal-glyph-san">
+        <path fill-rule="evenodd" d="M4 4 h52 v52 h-52 z
+          M14 17 h32 v4.5 h-32 z M16 28.75 h28 v4.5 h-28 z M14 40.5 h32 v4.5 h-32 z"/>
+      </g>
+      <!-- verified seal used on idea cards: stylized 験 (verify) abstraction -->
+      <g id="seal-glyph-verify">
+        <path fill-rule="evenodd" d="M3 3 h54 v54 h-54 z
+          M16 16 h12 v28 h-5 v-23 h-7 z
+          M32 16 h12 v5 h-7 v6 h7 v5 h-7 v6 h7 v5 h-12 z"/>
+      </g>
+    </defs>
+  </svg>
+
+  <!-- Real ideas, copied verbatim from data/2026-05-31/ideas.json -->
+  <script type="application/json" id="ideas-data">
+  {
+    "date": "2026-05-31",
+    "strategy_used": "mixed",
+    "ideas": [
+      {
+        "id": "2026-05-31-001",
+        "title": "Cairn",
+        "domain": "Creator Economy",
+        "one_liner": "A publishing platform where knowledge creators monetize what their audience actually remembers and can apply, using built-in spaced repetition instead of engagement metrics.",
+        "problem": "The creator economy is built on an attention-extraction business model that is now eating both creators and audiences alive. Platforms reward volume and watch-time, so creators are trapped on an algorithmic treadmill that pushes them to publish disposable content faster than they can think, while audiences scroll feeds engineered to fragment attention and leave nothing behind. Goldman Sachs estimates the creator economy could approach half a trillion dollars by 2027, yet almost none of that value accrues to durable human knowledge: it is denominated in clicks, impressions, and minutes watched.",
+        "solution": "Cairn is a publishing and monetization platform for knowledge creators where the unit of value is durable memory, not engagement. Creators publish 'tracks': interconnected concept cards distilled from their research and expertise. The platform converts each track into a spaced-repetition schedule that resurfaces the core ideas over weeks so the audience actually retains and can apply what the creator taught. Creators are paid on a subscription-plus-outcome model: base recurring revenue plus bonuses tied to retention and completion.",
+        "market_size": "TAM: the global creator economy is roughly $250B in 2024 and projected by Goldman Sachs to approach $480B by 2027; the knowledge/education-creator slice is a faster-growing wedge on the order of $30-50B. SOM (3-5 yr): capturing 50k-100k creators at an average $5k-10k of annual platform-mediated revenue with a 10-15% take rate implies roughly $30-100M ARR.",
+        "competitors": ["Substack", "Patreon", "Readwise Reader", "RemNote", "Maven"],
+        "feasibility_score": 4,
+        "novelty_score": 4,
+        "sources": [
+          "https://www.goldmansachs.com/intelligence/pages/the-creator-economy-could-approach-half-a-trillion-dollars-by-2027.html",
+          "https://signalfire.com/blog/creator-economy/"
+        ],
+        "tags": ["creator-economy", "spaced-repetition", "cognitive-sovereignty", "knowledge-monetization", "anti-attention-economy"]
+      },
+      {
+        "id": "2026-05-31-002",
+        "title": "Whetstone",
+        "domain": "Education",
+        "one_liner": "An AI learning layer that refuses to hand over answers, using Socratic friction, retrieval practice, and a student-owned memory model to build durable thinking instead of eroding it.",
+        "problem": "The first wave of AI in education optimized for the wrong thing. Answer-on-demand tutors make completing an assignment frictionless, but a growing body of evidence shows that frictionlessness comes at a cognitive cost. The 2025 MIT Media Lab study 'Your Brain on ChatGPT' found that students who used an LLM to write essays showed measurably weaker neural connectivity, poorer recall of their own work, and reduced sense of authorship compared with students who wrote unaided.",
+        "solution": "Whetstone is a cognitive-sovereignty learning layer built on an inverted constraint: the AI never gives the final answer. Instead it converts any problem into productive friction using established learning science. The core is a desirable-difficulty engine that applies the Socratic method, the generation effect, retrieval practice, and adaptive spaced repetition. A companion 'offload guard' browser extension detects the moment a student is about to paste a question into ChatGPT and turns it into a 90-second scaffolded retrieval interaction.",
+        "market_size": "TAM: global edtech is roughly USD 200-250B in 2025, with the AI-in-education slice around USD 6-8B in 2025 and widely projected to exceed USD 30B by 2030. SOM: a 5-7 year reachable target is USD 50-150M ARR, built from roughly 1,000-3,000 institutional seats plus a consumer extension converting in the low single-digit percent at USD 8-15/month.",
+        "competitors": [
+          "Khan Academy Khanmigo and consumer LLM tutors (ChatGPT, Gemini) — answer-forward, engagement-optimized",
+          "Chegg / Course Hero / Photomath — answer-on-demand, the explicit anti-pattern",
+          "Anki / Quizlet — sound spaced-repetition science but manual, not integrated into the moment of offloading"
+        ],
+        "feasibility_score": 4,
+        "novelty_score": 4,
+        "sources": [
+          "https://arxiv.org/abs/2506.08872",
+          "https://www.microsoft.com/en-us/research/publication/the-impact-of-generative-ai-on-critical-thinking-self-reported-reductions-in-cognitive-effort-and-confidence-effects-from-a-survey-of-knowledge-workers/",
+          "https://www.grandviewresearch.com/industry-analysis/education-technology-market"
+        ],
+        "tags": ["cognitive-sovereignty", "anti-offloading", "retrieval-practice", "edtech", "learning-science"]
+      },
+      {
+        "id": "2026-05-31-003",
+        "title": "Mnemos",
+        "domain": "Gaming",
+        "one_liner": "A roguelike RPG where your own study material becomes the loot, turning the game's engagement loop into a scientifically-paced memory-building engine that respects rather than exploits your attention.",
+        "problem": "The gaming and brain-training industries are built on attention extraction. Mobile games optimize for daily active engagement using loot boxes, streak-shaming, and infinite loops. Meanwhile the brain-training category that promised cognitive benefit has a credibility crater: Lumosity paid $2M to the FTC in 2016 for deceptive claims. The result is a false choice: dry but effective tools like Anki with high dropout, or polished games that capture hours while building no durable knowledge.",
+        "solution": "Mnemos is a roguelike RPG whose entire progression economy is powered by spaced-repetition recall of content the player chooses to master: imported textbooks, language decks, certification material. Correctly recalling an item at its scheduled interval (using the open FSRS forgetting-curve algorithm) is the in-game action that earns loot, unlocks spells, and advances the story. Sessions are deliberately capped to match memory-consolidation science, with no FOMO timers and no loot-box gambling.",
+        "market_size": "TAM: ~$30-40B, the overlap of the $184B global games market with gamified learning and the ~$6-8B brain-training segment. SOM: ~$5-15M ARR achievable in 3 years by capturing the niche of committed learners who also game, modeled on Duolingo's early subscriber economics at 50k-150k paying users.",
+        "competitors": ["Duolingo", "Anki", "Lumosity / Elevate / Peak", "Habitica"],
+        "feasibility_score": 4,
+        "novelty_score": 4,
+        "sources": [
+          "https://www.ftc.gov/news-events/news/press-releases/2016/01/lumosity-pay-2-million-settle-ftc-deceptive-advertising-charges",
+          "https://newzoo.com/resources/trend-reports/global-games-market-report",
+          "https://pubmed.ncbi.nlm.nih.gov/16507066/"
+        ],
+        "tags": ["spaced-repetition", "gamified-learning", "attention-economy", "memory", "anti-dark-patterns"]
+      },
+      {
+        "id": "2026-05-31-004",
+        "title": "Whetstone",
+        "domain": "Marketplace",
+        "one_liner": "A two-sided marketplace for cognitive apprenticeships, expert-designed deliberate-practice programs and Socratic coaching engineered so AI cannot do the thinking for you.",
+        "problem": "The generative-AI boom has quietly created a new liability: cognitive debt. A 2025 MIT Media Lab study found that people who wrote essays with an LLM showed measurably weaker neural connectivity and poorer recall, with the deficit persisting even after the tool was removed. Course platforms like Coursera optimize for completion and certificates, both of which an AI can now generate in minutes, so the credential decouples from real capability.",
+        "solution": "Whetstone is a two-sided marketplace for cognitive apprenticeships. Domain experts publish structured practice tracks built on retrieval practice and transfer tasks, while learners and employers buy outcomes measured by what people can do and recall later. Every listing carries a Whetstone efficacy score derived from longitudinal retention testing. Assessment happens through timed retrieval, oral defense, and applied transfer rather than take-home deliverables, which makes AI ghost-completion useless.",
+        "market_size": "TAM: the global professional upskilling and tutoring market is roughly $370-400B. SAM: English-speaking knowledge workers and employers willing to pay for active, coached skill-building, roughly $30-40B. SOM: a cognitive-fitness early-adopter segment reachable in 3-5 years at roughly $200-500M.",
+        "competitors": [
+          "Maven (cohort-based course marketplace, optimized for delivery not retention)",
+          "Brilliant.org (interactive active learning, but single-publisher, not a marketplace)",
+          "Wyzant / Outschool (tutoring marketplaces oriented to giving answers)"
+        ],
+        "feasibility_score": 3,
+        "novelty_score": 4,
+        "sources": [
+          "https://arxiv.org/abs/2506.08872",
+          "https://www.microsoft.com/en-us/worklab/work-trend-index",
+          "https://www.grandviewresearch.com/industry-analysis/e-learning-market"
+        ],
+        "tags": ["cognitive-sovereignty", "deliberate-practice", "anti-ai-offload", "upskilling-marketplace", "efficacy-data"]
+      },
+      {
+        "id": "2026-05-31-005",
+        "title": "Counterweight",
+        "domain": "FinTech",
+        "one_liner": "A subscription money companion that inserts protective friction and externalized decision memory between you and attention-extractive fintech, so you keep agency over how you spend, save, and invest.",
+        "problem": "Consumer fintech has been re-engineered around attention capture rather than financial wellbeing. Commission-free brokerages turned investing into a slot machine of confetti animations and push notifications that reward frequent trading. Buy-now-pay-later splits a $60 purchase into four 'painless' installments that bypass deliberation; the CFPB found BNPL originations grew nearly tenfold between 2019 and 2021. The common thread is the deliberate removal of friction at exactly the moments where friction protects decision quality.",
+        "solution": "Counterweight is a subscription 'cognitive firewall' for personal finance. It connects to a user's accounts via Plaid and intervenes at the decision moment rather than after the fact. When it detects an impulse-prone action, it inserts protective, calibrated friction: a cooldown timer, a one-line prompt to articulate the 'why,' and the relevant base rate. Its core asset is an externalized decision journal recording every meaningful money decision with the user's stated reasoning and the later outcome. It charges a flat subscription and takes no interchange or payment-for-order-flow.",
+        "market_size": "TAM (US): ~50M adults actively exposed to attention-extractive fintech; at $96/yr that is roughly a $4.8B addressable market. SAM: ~15M people, about $1.4B. SOM (3-year): capturing ~250k paying subscribers, the same order of magnitude as YNAB's reported base, yields roughly $24M ARR.",
+        "competitors": ["YNAB (You Need A Budget)", "Monarch Money", "Cleo", "one sec (digital-wellbeing friction app, adjacent)"],
+        "feasibility_score": 4,
+        "novelty_score": 4,
+        "sources": [
+          "https://www.consumerfinance.gov/data-research/research-reports/buy-now-pay-later-market-trends-and-consumer-impacts/",
+          "https://www.newyorkfed.org/microeconomics/hhdc"
+        ],
+        "tags": ["cognitive-sovereignty", "behavioral-finance", "anti-dark-patterns", "decision-support", "personal-finance"]
+      },
+      {
+        "id": "2026-05-31-006",
+        "title": "Mnemo",
+        "domain": "Consumer Apps",
+        "one_liner": "Mnemo sits between you and your AI assistants and turns your own AI 'exhaust' into durable human memory, so you keep the productivity of ChatGPT and Claude without the cognitive atrophy.",
+        "problem": "AI assistants are creating a quiet cognitive crisis. Hundreds of millions of people now route their thinking through ChatGPT, Claude, Gemini and Perplexity. A 2025 Microsoft and Carnegie Mellon survey found that higher confidence in generative AI correlates with measurably less critical thinking, and an MIT Media Lab EEG study documented accumulating 'cognitive debt'. The dominant 'AI memory' products like Rewind and Limitless are explicitly designed to remember for you, deepening dependence.",
+        "solution": "Mnemo is a consumer app and browser extension that sits between you and your AI assistants and converts your conversation history into retained knowledge. It ingests sessions from ChatGPT, Claude, Gemini and Perplexity, then detects 'learnable moments' and generates spaced-repetition cards plus 'active reconstruction' challenges that ask you to re-derive the reasoning yourself before the answer is revealed. A personal cognitive sovereignty score tracks your ratio of retained to offloaded knowledge over time.",
+        "market_size": "TAM: global consumer EdTech plus personal-productivity software, roughly 90 to 120B USD. SAM: English-language knowledge workers and students who use AI assistants weekly, ~150-200M people; at 60 USD/yr that is ~10-12B USD. SOM: the tools-for-thought early-adopter segment, roughly 2-3M reachable within 3-5 years, about 60-150M USD ARR.",
+        "competitors": ["Readwise Reader", "Anki", "Rewind / Limitless (AI recall, opposite philosophy)", "RemNote", "Native assistant memory (ChatGPT / Claude)"],
+        "feasibility_score": 4,
+        "novelty_score": 4,
+        "sources": [
+          "https://www.microsoft.com/en-us/research/publication/the-impact-of-generative-ai-on-critical-thinking-self-reported-reductions-in-cognitive-effort-and-confidence-effects-from-a-survey-of-knowledge-workers/",
+          "https://www.media.mit.edu/projects/your-brain-on-chatgpt/overview/"
+        ],
+        "tags": ["cognitive-sovereignty", "anti-cognitive-offloading", "active-recall", "ai-literacy"]
+      },
+      {
+        "id": "2026-05-31-007",
+        "title": "Mindprint",
+        "domain": "Sustainability",
+        "one_liner": "An enterprise AI-usage layer that meters the carbon and water cost of every model call while keeping the employee's own thinking in the loop, so organizations can scale AI without burning the grid or atrophying their people's judgment.",
+        "problem": "The generative-AI boom is creating two costs that are real, growing, and almost entirely unpriced. The first is physical: data centers already consume ~1.5% of global electricity, the IEA projects that roughly doubling by 2030. Yet when an enterprise rolls out Copilot to 20,000 employees, it has no per-query ledger of the energy, water, or carbon those interactions burn. The second cost is cognitive: heavy reliance on LLMs reduces neural engagement and later recall — cognitive debt.",
+        "solution": "Mindprint is a lightweight proxy that sits between employees and the LLM tools they already use. On the sustainability side it meters each interaction in real time, estimating energy, water, and CO2 from the model, token count, and the inference region's grid intensity, rolling these into the organization's ESG reporting. On the cognitive side it classifies the task behind each prompt and, for high-stakes reasoning, shifts the model into a Socratic mode that requires the human to draft the core argument before the AI expands around it.",
+        "market_size": "TAM ~30B USD: the intersection of enterprise AI-governance software and carbon/ESG accounting software. SAM ~4-6B USD: enterprises with 1,000+ employees in regulated sectors subject to mandatory climate disclosure. SOM ~5-15M USD ARR within 3-5 years, from 30-80 design-partner accounts at 100-250K USD annual contract value.",
+        "competitors": [
+          "Credo AI and Holistic AI (AI governance, but no carbon or cognition layer)",
+          "Watershed and Persefoni (carbon accounting, but no AI-inference granularity)",
+          "Center for Humane Technology, Freedom, one sec (attention protection, consumer-only)"
+        ],
+        "feasibility_score": 4,
+        "novelty_score": 4,
+        "sources": [
+          "https://theshiftproject.org/en/lean-ict-2/",
+          "https://www.iea.org/energy-system/buildings/data-centres-and-data-transmission-networks",
+          "https://www.humanetech.com/"
+        ],
+        "tags": ["AI governance", "digital sustainability", "cognitive sovereignty", "carbon accounting", "deep work"]
+      },
+      {
+        "id": "2026-05-31-008",
+        "title": "Crucible",
+        "domain": "Developer Tools",
+        "one_liner": "A CI-native verification gate that sandboxes, reproduces, and trust-scores every AI-generated pull request and vulnerability report before a human ever looks at it.",
+        "problem": "The marginal cost of producing code and bug reports has collapsed, but the cost of reviewing them has not. Autonomous coding agents now open pull requests at machine speed, and maintainers are drowning. AI slop is grammatically perfect and superficially convincing while being functionally broken. curl's lead maintainer Daniel Stenberg publicly documented a flood of fabricated, AI-generated CVE reports, each requiring real human hours to disprove, with zero genuine vulnerabilities among them.",
+        "solution": "Crucible is a merge gate that treats every incoming contribution as an empirical claim to be falsified rather than a text to be read. When a PR or vulnerability report arrives, Crucible spins an ephemeral, network-isolated sandbox of the target repo, then attempts to reproduce the stated behavior: runs the claimed exploit, applies the patch and re-runs to confirm the fix, executes the test suite plus auto-generated differential tests. The output is a trust score, a reproduction transcript, and a signed provenance attestation. A cross-project reputation graph throttles serial slop-submitters everywhere.",
+        "market_size": "TAM: combined DevSecOps, code-review, and vulnerability-management spend, ~$12-15B in 2027. SAM: teams exposed to high-volume agent-generated contributions — OSS foundations, the ~$1B+ bug-bounty triage segment, enterprise platform teams — roughly $2-3B. SOM (3-year): a few thousand paying teams at $2-5k/mo plus per-verification usage, a reachable $10-20M ARR.",
+        "competitors": ["GitHub (Copilot Autofix + code scanning)", "Snyk", "CodeRabbit / Greptile (AI code review)", "HackerOne / Bugcrowd (human triage)", "Semgrep"],
+        "feasibility_score": 4,
+        "novelty_score": 4,
+        "sources": [
+          "https://daniel.haxx.se/blog/2024/01/02/the-i-in-llm-stands-for-intelligence/",
+          "https://github.blog/2023-11-08-the-state-of-open-source-and-ai/",
+          "https://www.grandviewresearch.com/industry-analysis/devsecops-market"
+        ],
+        "tags": ["ai-code-verification", "devsecops", "vulnerability-triage", "code-provenance", "ci-cd"]
+      },
+      {
+        "id": "2026-05-31-009",
+        "title": "Clarus",
+        "domain": "Health Tech",
+        "one_liner": "Clarus turns the digital exhaust you already produce into a private, user-owned set of cognitive vitals, giving people an early-warning system for attention and memory decline without surrendering their minds to the attention economy.",
+        "problem": "The attention economy has quietly made human cognition the product. Knowledge workers now switch screens roughly every 47 seconds, yet individuals have no objective, continuous read on their own attention or memory. Separately, genuine cognitive decline is almost always caught late. Dementia already affects more than 55 million people worldwide, and clinical assessment is episodic and expensive. Research on digital biomarkers shows early signal is present in everyday interaction patterns, but it is trapped inside Big Tech telemetry.",
+        "solution": "Clarus is an on-device cognitive vitals platform. It passively derives attention, processing-speed, and working-memory indicators from interaction patterns the user already generates — keystroke timing, scroll and dwell patterns, task-switch frequency — supplemented by optional 60-second active micro-checks. All raw signal is processed and stored locally, and the user owns the longitudinal record outright. It correlates measured cognition against context to surface what specifically erodes it for you, then nudges rather than auto-acting.",
+        "market_size": "TAM roughly 30B USD by 2030 at the convergence of brain-health, digital biomarkers, and digital cognitive assessment. SAM roughly 5-8B, covering the worried-well aged 45-65 and knowledge workers with attention concerns. SOM roughly 50-150M obtainable in 3-5 years at a premium subscription of about 120-180 USD per year.",
+        "competitors": ["Linus Health", "Altoida", "Cambridge Cognition (CANTAB)", "Akili Interactive / EndeavorRx"],
+        "feasibility_score": 3,
+        "novelty_score": 4,
+        "sources": [
+          "https://www.who.int/news-room/fact-sheets/detail/dementia",
+          "https://www.hsph.harvard.edu/onnela-lab/"
+        ],
+        "tags": ["digital-biomarkers", "cognitive-sovereignty", "early-detection", "privacy-first", "attention-economy"]
+      },
+      {
+        "id": "2026-05-31-010",
+        "title": "Whetstone",
+        "domain": "AI/ML",
+        "one_liner": "An AI layer that sits between you and your AI tools, converting one-click answers into calibrated friction so your attention, memory, and reasoning get stronger instead of atrophying.",
+        "problem": "The first wave of generative AI optimized for one thing: removing cognitive effort. The early evidence is that this is quietly degrading the people who use it most. A 2025 MIT Media Lab EEG study found participants who wrote essays with an LLM showed lower neural connectivity, weaker memory, and reduced sense of ownership, with deficits persisting even after the tool was removed. This is cognitive offloading hardening into cognitive debt. Existing tools do not address it: focus blockers treat AI as a distraction to cut off; spaced-repetition tools act after the fact.",
+        "solution": "Whetstone is a cross-tool middleware (browser extension plus on-device proxy) that intercepts your interactions with ChatGPT, Claude, Copilot and Gemini and applies productive friction at the moment of offloading. Instead of letting you copy-paste an answer, it can reshape an AI response into a Socratic scaffold, withholding the final answer until you attempt a reconstruction. It computes a Dependency Ratio per task and a longitudinal Cognitive Sovereignty score. The core IP is a friction-calibration model that learns each user's threshold from retention outcomes.",
+        "market_size": "TAM: ~$100B+ global productivity, edtech, and corporate L&D software. SAM: English-language knowledge workers and students who actively use AI tools, conservatively ~$5-10B. SOM (3-year): a focused prosumer + early-enterprise capture of roughly 50k-200k paid users at ~$12/mo blended, i.e. ~$7-30M ARR.",
+        "competitors": ["Freedom / Cold Turkey (focus blocking, ignore AI offloading)", "Readwise + Anki (spaced repetition, post-hoc and manual)", "Rize / RescueTime (attention analytics, no at-moment intervention)"],
+        "feasibility_score": 3,
+        "novelty_score": 4,
+        "sources": [
+          "https://arxiv.org/abs/2506.08872",
+          "https://www.microsoft.com/en-us/research/publication/the-impact-of-generative-ai-on-critical-thinking-self-reported-reductions-in-cognitive-effort-and-confidence-effects-from-a-survey-of-knowledge-workers/"
+        ],
+        "tags": ["cognitive-sovereignty", "anti-cognitive-offloading", "productive-friction", "metacognition", "edtech"]
+      }
+    ]
+  }
+  </script>
+
+  <script src="assets/app.js"></script>
 </body>
 </html>

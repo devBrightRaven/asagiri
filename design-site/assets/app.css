@@ -1,0 +1,1450 @@
+@import "./tokens.css";
+
+/* =========================================================================
+ * Asagiri — Variant A · 朝霧捲軸 (single-scroll narrative)
+ * Self-contained stylesheet. Borrows the Ryūmu design system from the live
+ * design-site (mist, glass cards, dew on hover) and extends it with the
+ * generation-demo timeline, the admin gate, and owner controls.
+ * ========================================================================= */
+
+/* === Reset === */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; min-height: 100%; }
+/* Clip decorative scroll-chrome bleed (knobs, mist bands, brocade) at the
+   page edge so the primary VERTICAL reading flow never gains a horizontal
+   page scrollbar — required for 320px / 200%-zoom reflow safety. The
+   dedicated 絵巻 region opts back IN to its own horizontal scroll locally. */
+html { overflow-x: clip; }
+body { min-height: 100%; margin: 0; overflow-x: clip; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* === Body & atmosphere === */
+body {
+  color: var(--fg);
+  font-family: var(--font-sans);
+  font-size: clamp(1rem, 0.94rem + 0.25vw, 1.0625rem);
+  line-height: 1.65;
+  letter-spacing: 0.005em;
+  background:
+    radial-gradient(ellipse at 80% 110%, var(--bg-warm), transparent 50%),
+    var(--bg-base);
+  position: relative;
+  overflow-x: hidden;
+}
+@media (prefers-color-scheme: dark) {
+  body {
+    background:
+      radial-gradient(ellipse at 50% -10%, var(--bg-warm), transparent 55%),
+      var(--bg-base);
+  }
+}
+
+/* === Mist layers (decorative) === */
+.mist {
+  position: fixed;
+  inset: -10%;
+  pointer-events: none;
+  z-index: 0;
+  mix-blend-mode: screen;
+  opacity: 0.55;
+  will-change: transform;
+}
+@media (prefers-color-scheme: dark) {
+  .mist { mix-blend-mode: lighten; opacity: 0.35; }
+}
+.mist-a { animation: drift-a 60s ease-in-out infinite; }
+.mist-b { animation: drift-b 90s ease-in-out infinite; opacity: 0.4; }
+.mist-c { animation: drift-c 120s ease-in-out infinite; opacity: 0.3; }
+@media (prefers-color-scheme: dark) {
+  .mist-b { opacity: 0.25; }
+  .mist-c { opacity: 0.2; }
+}
+@keyframes drift-a {
+  0% { transform: translate3d(-5%, 2%, 0); }
+  50% { transform: translate3d(5%, -3%, 0); }
+  100% { transform: translate3d(-5%, 2%, 0); }
+}
+@keyframes drift-b {
+  0% { transform: translate3d(3%, -2%, 0); }
+  50% { transform: translate3d(-4%, 3%, 0); }
+  100% { transform: translate3d(3%, -2%, 0); }
+}
+@keyframes drift-c {
+  0% { transform: translate3d(-2%, 4%, 0); }
+  50% { transform: translate3d(4%, -2%, 0); }
+  100% { transform: translate3d(-2%, 4%, 0); }
+}
+
+/* === Links === */
+a { color: var(--accent); text-underline-offset: 3px; }
+a:hover { text-decoration-thickness: 2px; }
+a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* === Headings === */
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.012em;
+  margin: 0 0 var(--space-5);
+}
+h1 {
+  font-size: clamp(2.25rem, 1.7rem + 2.4vw, 3.5rem);
+  animation: breath 8s ease-in-out infinite;
+}
+h1 .glow {
+  color: var(--accent);
+  text-shadow: 0 0 24px var(--accent-glow);
+}
+h2 {
+  font-size: clamp(1.5rem, 1.25rem + 1vw, 2rem);
+  margin-top: var(--space-8);
+}
+h3 {
+  font-size: clamp(1.125rem, 1rem + 0.5vw, 1.375rem);
+  margin-top: var(--space-6);
+}
+@keyframes breath {
+  0%, 100% { letter-spacing: -0.012em; }
+  50%      { letter-spacing: -0.002em; }
+}
+@media (prefers-reduced-motion: reduce) {
+  h1 { animation: none; }
+}
+
+p { margin: 0 0 var(--space-4); max-width: 70ch; }
+
+/* === Code === */
+code, kbd, pre { font-family: var(--font-mono); font-size: 0.95em; }
+code {
+  background: var(--bg-sunk);
+  padding: 0.1em 0.4em;
+  border-radius: 4px;
+  border: 1px solid var(--border-soft);
+}
+pre {
+  background: var(--bg-sunk);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-4);
+  overflow-x: auto;
+  font-size: 0.875rem;
+  line-height: 1.55;
+}
+pre code { background: transparent; padding: 0; border: none; }
+
+/* === Skip link === */
+.skip-link {
+  position: absolute;
+  top: -100px;
+  left: var(--space-2);
+  z-index: 100;
+  background: var(--bg-elev);
+  color: var(--fg);
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  backdrop-filter: blur(8px);
+}
+.skip-link:focus-visible { top: var(--space-2); }
+
+/* === Visually hidden === */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* === Header === */
+header.site {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  border-bottom: 1px solid var(--border-soft);
+  background: var(--bg-elev);
+  backdrop-filter: blur(20px) saturate(120%);
+  -webkit-backdrop-filter: blur(20px) saturate(120%);
+}
+header.site .row {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: var(--space-3) var(--space-5);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+header.site .brand {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 1.0625rem;
+  letter-spacing: 0.005em;
+  text-decoration: none;
+  color: var(--fg);
+}
+header.site .brand .ja {
+  font-weight: 400;
+  font-size: 0.9375rem;
+  color: var(--fg-muted);
+}
+header.site nav.primary {
+  display: flex;
+  gap: var(--space-1);
+  margin-left: auto;
+  flex-wrap: wrap;
+}
+header.site nav.primary a {
+  color: var(--fg-muted);
+  text-decoration: none;
+  font-size: 0.9375rem;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius);
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  transition: color 300ms ease, background-color 300ms ease;
+}
+header.site nav.primary a:hover { color: var(--fg); }
+header.site nav.primary a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* === Layout === */
+.page {
+  position: relative;
+  z-index: 1;
+  max-width: 920px;
+  margin: 0 auto;
+  padding: var(--space-7) var(--space-5) var(--space-9);
+}
+section { scroll-margin-top: 5rem; }
+.section + .section { margin-top: var(--space-9); }
+
+/* === Lede / meta / tag === */
+.lede {
+  font-size: clamp(1.0625rem, 1rem + 0.4vw, 1.25rem);
+  color: var(--fg-muted);
+  max-width: 42em;
+  margin: 0 0 var(--space-6);
+}
+.meta {
+  font-size: 0.8125rem;
+  color: var(--fg-muted);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+}
+.tag {
+  display: inline-block;
+  font-size: 0.6875rem;
+  font-family: var(--font-mono);
+  padding: 0.15em 0.6em;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-radius: 4px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* === Hero === */
+.hero {
+  padding-top: var(--space-6);
+  padding-bottom: var(--space-7);
+}
+.hero .meta { margin-bottom: var(--space-4); }
+.hero .ja-large {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 1rem + 2vw, 2.25rem);
+  color: var(--fg-muted);
+  font-weight: 400;
+  display: block;
+  margin-bottom: var(--space-2);
+  letter-spacing: 0.1em;
+}
+.hero p.lede { margin-top: var(--space-5); }
+.scroll-cue {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-5);
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  color: var(--fg-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.scroll-cue .dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--accent);
+  animation: cue-pulse 2.6s ease-in-out infinite;
+}
+@keyframes cue-pulse {
+  0%, 100% { opacity: 0.3; transform: translateY(0); }
+  50% { opacity: 1; transform: translateY(3px); }
+}
+
+/* === Glass card with dew on hover === */
+.card {
+  position: relative;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  backdrop-filter: blur(20px) saturate(115%);
+  -webkit-backdrop-filter: blur(20px) saturate(115%);
+  overflow: hidden;
+  transition:
+    transform 500ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    border-color 500ms ease,
+    box-shadow 500ms ease;
+}
+.card::before {
+  content: "";
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, var(--dew), transparent 80%);
+  box-shadow: inset 0 0 0 1px var(--dew-rim);
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 600ms ease, transform 600ms ease;
+}
+.card:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent);
+  box-shadow: var(--shadow-md);
+}
+.card:hover::before {
+  opacity: 1;
+  transform: translateY(0);
+}
+.card h3 { margin-top: 0; }
+@media (prefers-reduced-motion: reduce) {
+  .card { transition: border-color 200ms; }
+  .card:hover { transform: none; box-shadow: var(--shadow-sm); }
+  .card::before { transition: opacity 200ms; }
+  .card:hover::before { transform: none; }
+}
+
+/* === Tables === */
+table { width: 100%; border-collapse: collapse; margin: var(--space-4) 0; }
+th, td {
+  text-align: left;
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--border-soft);
+  vertical-align: top;
+}
+th {
+  color: var(--fg-muted);
+  font-weight: 600;
+  font-size: 0.875rem;
+  letter-spacing: 0.02em;
+}
+
+/* === Figures / diagrams === */
+figure.diagram {
+  margin: var(--space-5) 0;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  backdrop-filter: blur(12px);
+  overflow-x: auto;
+}
+figure.diagram figcaption {
+  margin-top: var(--space-3);
+  font-size: 0.875rem;
+  color: var(--fg-muted);
+}
+figure.diagram svg { display: block; max-width: 100%; height: auto; }
+
+/* === Callout === */
+.callout {
+  position: relative;
+  border-left: 3px solid var(--accent);
+  background: var(--accent-soft);
+  padding: var(--space-3) var(--space-4);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  margin: var(--space-4) 0;
+}
+.callout strong { color: var(--accent); }
+
+/* === Progressive-disclosure stages (details/summary) === */
+.stages { margin: var(--space-5) 0; display: grid; gap: var(--space-3); }
+details.stage {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(12px);
+  overflow: hidden;
+  transition: border-color 300ms ease;
+}
+details.stage[open] { border-color: var(--accent); }
+details.stage > summary {
+  list-style: none;
+  cursor: pointer;
+  padding: var(--space-4) var(--space-5);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 44px;
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 1.0625rem;
+}
+details.stage > summary::-webkit-details-marker { display: none; }
+details.stage > summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+  border-radius: var(--radius-lg);
+}
+.stage .num {
+  flex: none;
+  width: 2rem; height: 2rem;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.stage .summary-text { flex: 1; }
+.stage .summary-text .sub {
+  display: block;
+  font-family: var(--font-mono);
+  font-weight: 400;
+  font-size: 0.8125rem;
+  color: var(--fg-muted);
+  letter-spacing: 0.01em;
+  margin-top: 2px;
+}
+.stage .chev {
+  flex: none;
+  color: var(--fg-muted);
+  transition: transform 300ms ease;
+}
+details.stage[open] .chev { transform: rotate(90deg); }
+.stage .body {
+  padding: 0 var(--space-5) var(--space-5);
+  border-top: 1px solid var(--border-soft);
+  margin-top: 0;
+  padding-top: var(--space-4);
+}
+.stage .body p:last-child { margin-bottom: 0; }
+
+/* === Flow strip (engine -> json -> webapp) === */
+.flow-strip {
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin: var(--space-5) 0;
+}
+.flow-node {
+  flex: 1 1 200px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  backdrop-filter: blur(12px);
+}
+.flow-node .kicker {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: var(--space-2);
+}
+.flow-node h3 { margin: 0 0 var(--space-2); font-size: 1.0625rem; }
+.flow-node p { margin: 0; font-size: 0.9rem; color: var(--fg-muted); }
+.flow-arrow {
+  flex: none;
+  align-self: center;
+  color: var(--accent);
+  font-size: 1.5rem;
+  line-height: 1;
+}
+@media (max-width: 640px) {
+  .flow-arrow { transform: rotate(90deg); align-self: center; }
+}
+
+/* === Buttons === */
+.btn {
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 500;
+  min-height: 44px;
+  padding: var(--space-2) var(--space-5);
+  border-radius: var(--radius);
+  border: 1px solid var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  transition: background-color 250ms ease, border-color 250ms ease, transform 250ms ease;
+}
+.btn:hover { background: color-mix(in oklch, var(--accent) 18%, transparent); }
+.btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.btn:active { transform: translateY(1px); }
+.btn[disabled] { opacity: 0.5; cursor: not-allowed; }
+.btn-primary {
+  background: var(--accent);
+  color: var(--bg-base);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 0 var(--accent-glow);
+  transition: box-shadow 400ms ease, background-color 250ms ease, transform 250ms ease;
+}
+.btn-primary:hover {
+  background: color-mix(in oklch, var(--accent) 88%, white);
+  box-shadow: 0 0 24px -2px var(--accent-glow);
+}
+.btn-ghost {
+  background: transparent;
+  color: var(--fg-muted);
+  border-color: var(--border);
+}
+.btn-ghost:hover { color: var(--fg); border-color: var(--accent); background: var(--accent-soft); }
+.btn-lg { font-size: 1.0625rem; padding: var(--space-3) var(--space-6); min-height: 52px; }
+.btn-sm { font-size: 0.875rem; min-height: 44px; padding: var(--space-2) var(--space-4); }
+@media (prefers-reduced-motion: reduce) {
+  .btn:active { transform: none; }
+}
+
+/* === Generation demo === */
+.demo-shell {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6) var(--space-5);
+  backdrop-filter: blur(20px) saturate(115%);
+  -webkit-backdrop-filter: blur(20px) saturate(115%);
+}
+.demo-launch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+}
+.demo-launch .hint {
+  font-size: 0.875rem;
+  color: var(--fg-muted);
+  margin: 0;
+  flex: 1 1 240px;
+}
+
+/* run log: the agent-chain step stream */
+.run-log {
+  margin: var(--space-5) 0 0;
+  display: grid;
+  gap: var(--space-2);
+}
+.run-log:empty { display: none; }
+.log-line {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius);
+  border: 1px solid var(--border-soft);
+  background: var(--bg-sunk);
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  opacity: 0;
+  transform: translateY(6px);
+  animation: log-in 500ms ease forwards;
+}
+@keyframes log-in {
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .log-line { opacity: 1; transform: none; animation: none; }
+}
+.log-line .stamp { color: var(--fg-muted); flex: none; }
+.log-line .glyph { flex: none; width: 1.2em; text-align: center; }
+.log-line.is-active { border-color: var(--accent); }
+.log-line.is-active .glyph {
+  color: var(--accent);
+  animation: spin 1s linear infinite;
+  display: inline-block;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .log-line.is-active .glyph { animation: none; }
+}
+.log-line.is-done .glyph { color: var(--accent); }
+.log-line .text { color: var(--fg); }
+.log-line .text b { color: var(--accent); font-weight: 600; }
+
+.run-status-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  color: var(--fg-muted);
+}
+.run-status-bar .progress-track {
+  flex: 1;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--bg-sunk);
+  overflow: hidden;
+  border: 1px solid var(--border-soft);
+}
+.run-status-bar .progress-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--accent);
+  border-radius: 999px;
+  transition: width 600ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* === Idea cards (materialize one at a time) === */
+.ideas-stream {
+  margin-top: var(--space-6);
+  display: grid;
+  gap: var(--space-4);
+}
+.ideas-stream:empty { display: none; }
+
+.idea-card {
+  position: relative;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  backdrop-filter: blur(20px) saturate(115%);
+  -webkit-backdrop-filter: blur(20px) saturate(115%);
+  overflow: hidden;
+}
+/* dew condensing reveal */
+.idea-card.condensing {
+  opacity: 0;
+  transform: translateY(14px) scale(0.99);
+  filter: blur(6px);
+  animation: condense 900ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+@keyframes condense {
+  0% { opacity: 0; transform: translateY(14px) scale(0.99); filter: blur(6px); }
+  60% { opacity: 1; filter: blur(0); }
+  100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .idea-card.condensing { opacity: 1; transform: none; filter: none; animation: none; }
+}
+.idea-card:hover { border-color: var(--accent); box-shadow: var(--shadow-md); transition: border-color 400ms, box-shadow 400ms; }
+
+.idea-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-2);
+}
+.idea-head .idnum {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  color: var(--fg-muted);
+}
+.idea-card h3 {
+  margin: 0;
+  font-size: 1.375rem;
+}
+.idea-domain {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  border: 1px solid var(--border);
+  background: var(--accent-soft);
+  padding: 0.1em 0.6em;
+  border-radius: 999px;
+}
+.idea-oneliner {
+  font-size: 1.0625rem;
+  color: var(--fg);
+  margin: var(--space-2) 0 var(--space-4);
+  max-width: none;
+}
+.idea-scores {
+  display: flex;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-3);
+}
+.score {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.8125rem;
+  color: var(--fg-muted);
+  font-family: var(--font-mono);
+}
+.score .dots { display: inline-flex; gap: 3px; }
+.score .pip {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: var(--border);
+  border: 1px solid var(--border);
+}
+.score .pip.on { background: var(--accent); border-color: var(--accent); }
+.idea-tags {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  margin-top: var(--space-3);
+}
+.idea-tags .tag { letter-spacing: 0.06em; }
+
+.idea-card details.more {
+  margin-top: var(--space-3);
+  border-top: 1px solid var(--border-soft);
+  padding-top: var(--space-3);
+}
+.idea-card details.more > summary {
+  cursor: pointer;
+  list-style: none;
+  font-size: 0.875rem;
+  color: var(--accent);
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.idea-card details.more > summary::-webkit-details-marker { display: none; }
+.idea-card details.more > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 3px; }
+.idea-card details.more h4 {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  margin: var(--space-4) 0 var(--space-1);
+}
+.idea-card details.more p { font-size: 0.95rem; }
+.idea-card details.more ul { margin: 0 0 var(--space-3); padding-left: 1.25rem; font-size: 0.95rem; }
+.idea-card details.more .sources a { word-break: break-word; }
+
+/* === Owner zone (revealed after unlock) === */
+.owner-actions {
+  display: none;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px dashed var(--border);
+  align-items: center;
+}
+body.is-admin .owner-actions { display: flex; }
+.owner-actions .owner-label {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  margin-right: auto;
+}
+.owner-actions .built {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  color: var(--accent);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* admin gate */
+.gate {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6) var(--space-5);
+  backdrop-filter: blur(20px) saturate(115%);
+  -webkit-backdrop-filter: blur(20px) saturate(115%);
+}
+.gate form { display: grid; gap: var(--space-3); max-width: 28rem; }
+.gate label { display: grid; gap: var(--space-2); font-weight: 500; }
+.gate input[type="password"] {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  min-height: 48px;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg-sunk);
+  color: var(--fg);
+}
+.gate input[type="password"]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-color: var(--accent);
+}
+.gate .field-row { display: flex; gap: var(--space-3); flex-wrap: wrap; align-items: end; }
+.gate .field-row > label { flex: 1 1 16rem; }
+.gate .gate-msg {
+  font-size: 0.875rem;
+  min-height: 1.4em;
+  margin: 0;
+}
+.gate .gate-msg.err { color: var(--danger); font-weight: 500; }
+.gate .gate-msg.ok { color: var(--accent); font-weight: 500; }
+.gate .stub-note {
+  margin-top: var(--space-3);
+  font-size: 0.8125rem;
+  color: var(--fg-muted);
+}
+.gate .stub-note code { font-size: 0.85em; }
+
+.gate.unlocked .lock-form { display: none; }
+.unlocked-panel { display: none; }
+.gate.unlocked .unlocked-panel { display: block; }
+.unlocked-panel .row {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: var(--space-4);
+}
+
+/* === Dialog === */
+dialog {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-elev);
+  color: var(--fg);
+  padding: var(--space-6);
+  max-width: min(32rem, calc(100vw - 2rem));
+  backdrop-filter: blur(24px) saturate(120%);
+  -webkit-backdrop-filter: blur(24px) saturate(120%);
+  box-shadow: var(--shadow-md);
+}
+dialog::backdrop {
+  background: oklch(0.2 0.03 240 / 45%);
+  backdrop-filter: blur(3px);
+}
+dialog h3 { margin-top: 0; }
+dialog p { color: var(--fg-muted); }
+dialog .dialog-actions {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  margin-top: var(--space-5);
+}
+
+/* === Toast (role=status) === */
+.toast-region {
+  position: fixed;
+  left: 50%;
+  bottom: var(--space-5);
+  transform: translateX(-50%);
+  z-index: 200;
+  display: grid;
+  gap: var(--space-2);
+  width: min(28rem, calc(100vw - 2rem));
+  pointer-events: none;
+}
+.toast {
+  pointer-events: auto;
+  background: var(--bg-elev);
+  border: 1px solid var(--accent);
+  border-left-width: 3px;
+  border-radius: var(--radius);
+  padding: var(--space-3) var(--space-4);
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  font-size: 0.9375rem;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  animation: toast-in 400ms ease;
+}
+.toast .glyph { color: var(--accent); flex: none; }
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .toast { animation: none; }
+}
+
+/* === Footer === */
+footer.site {
+  position: relative;
+  z-index: 1;
+  border-top: 1px solid var(--border-soft);
+  margin-top: var(--space-9);
+  padding: var(--space-5);
+  text-align: center;
+  color: var(--fg-muted);
+  font-size: 0.875rem;
+}
+footer.site a { color: var(--fg-muted); }
+
+/* =========================================================================
+ * ===================  卷軸 / EMAKI HANDSCROLL LAYER  ====================
+ * A2 transforms the single-scroll page into a mounted East-Asian hanging
+ * /hand scroll. All of this chrome (mounting, rollers, cord, title slip,
+ * mist scene-breaks, seals, brush rules) is DECORATIVE and aria-hidden.
+ * The reading column (the .page <main>) is unchanged content; here it just
+ * sits inside a 畫心 painting field on aged paper, wrapped by 裝裱 mounting.
+ * ========================================================================= */
+
+/* ---- The mounted scroll object -------------------------------------- */
+.scroll-mount {
+  position: relative;
+  z-index: 1;
+  max-width: 1040px;
+  margin: var(--space-6) auto var(--space-5);
+  padding: 0 var(--space-4);
+}
+@media (max-width: 640px) {
+  .scroll-mount { padding: 0 var(--space-2); margin-top: var(--space-4); }
+}
+
+/* ---- 天杆 top rod + 掛繩 cord + 題簽 title slip --------------------- */
+.scroll-top {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  height: 84px;
+  margin-bottom: -6px;
+  z-index: 3;
+}
+/* hanging cords descend from above to the rod */
+.scroll-top .cord {
+  position: absolute;
+  top: -40px;
+  width: 2px;
+  height: 64px;
+  background: linear-gradient(var(--cord), color-mix(in oklab, var(--cord) 60%, transparent));
+  border-radius: 2px;
+  opacity: 0.85;
+}
+.scroll-top .cord-l { left: calc(50% - 60px); transform: rotate(7deg); transform-origin: top; }
+.scroll-top .cord-r { left: calc(50% + 60px); transform: rotate(-7deg); transform-origin: top; }
+
+.top-rod {
+  position: relative;
+  width: 100%;
+  max-width: 980px;
+  height: 26px;
+  align-self: flex-end;
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg,
+      color-mix(in oklab, var(--roller) 70%, white 18%) 0%,
+      var(--roller) 42%,
+      color-mix(in oklab, var(--roller) 70%, black 28%) 100%);
+  box-shadow: var(--shadow-sm), inset 0 1px 0 rgba(255,255,255,0.12);
+}
+/* roller knobs 軸頭 at both rod ends */
+.knob {
+  position: absolute;
+  top: 50%;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 35% 30%,
+      color-mix(in oklab, var(--roller-knob) 60%, white 22%),
+      var(--roller-knob) 70%);
+  box-shadow: var(--shadow-sm), inset 0 0 0 2px color-mix(in oklab, var(--roller-knob) 50%, black);
+  transform: translateY(-50%);
+}
+.knob-l { left: -16px; }
+.knob-r { right: -16px; }
+
+/* 題簽 title slip: vertical decorative title, hangs over the painting field */
+.title-slip {
+  position: absolute;
+  top: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 4;
+  width: 46px;
+  min-height: 120px;
+  padding: var(--space-3) 0 var(--space-2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  background:
+    linear-gradient(180deg,
+      var(--paper-slip),
+      color-mix(in oklab, var(--paper-slip) 86%, var(--silk) 14%));
+  border: 1px solid var(--silk-edge);
+  border-radius: 3px 3px 4px 4px;
+  box-shadow: var(--shadow-sm);
+}
+.title-slip .slip-title {
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  letter-spacing: 0.12em;
+  color: var(--ink);          /* ink on slip ~12.8:1 */
+  line-height: 1.1;
+}
+.title-slip .slip-sub {
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
+  letter-spacing: 0.18em;
+  color: var(--ink-muted);    /* muted ink on slip, AA */
+}
+
+/* ---- 畫心 painting field that unrolls ------------------------------ */
+.scroll-field {
+  position: relative;
+  transform-origin: top center;
+  /* unroll-on-load: revealed from top downward via clip + scaleY.
+     JS adds .is-unrolled; reduced-motion shows it open immediately (below). */
+  clip-path: inset(0 0 100% 0);
+  opacity: 0;
+  transition:
+    clip-path 1100ms cubic-bezier(0.16, 0.84, 0.24, 1),
+    opacity 700ms ease;
+}
+.scroll-field.is-unrolled {
+  clip-path: inset(0 0 0 0);
+  opacity: 1;
+}
+/* If JS never runs OR no-animation context, keep field visible (progressive
+   enhancement safety: .no-anim is added when reduced-motion is set). */
+.scroll-mount.no-anim .scroll-field {
+  clip-path: none;
+  opacity: 1;
+  transition: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .scroll-field { clip-path: none; opacity: 1; transition: none; }
+}
+
+/* ---- 裝裱 mounting border (brocade) wrapping the reading column ---- */
+.mounting {
+  position: relative;
+  border-radius: 4px;
+  padding: clamp(10px, 2.4vw, 26px);
+  /* brocade mounting: silk band with a quiet diaper/key-fret diaper pattern,
+     all from repeating gradients (no images). */
+  background-color: var(--silk);
+  background-image:
+    /* subtle key-fret diaper */
+    repeating-linear-gradient(45deg,
+      color-mix(in oklab, var(--silk-edge) 40%, transparent) 0 2px,
+      transparent 2px 13px),
+    repeating-linear-gradient(-45deg,
+      color-mix(in oklab, var(--silk-edge) 30%, transparent) 0 2px,
+      transparent 2px 13px),
+    linear-gradient(180deg,
+      color-mix(in oklab, var(--silk) 88%, white 6%),
+      color-mix(in oklab, var(--silk) 84%, black 8%));
+  box-shadow:
+    var(--shadow-md),
+    inset 0 0 0 1px color-mix(in oklab, var(--silk-edge) 60%, transparent);
+}
+/* inner gold-thread separator line between mounting and painting field */
+.mounting::before {
+  content: "";
+  position: absolute;
+  inset: clamp(7px, 1.7vw, 18px);
+  border: 1px solid color-mix(in oklab, var(--paper-slip) 50%, var(--silk-edge));
+  border-radius: 3px;
+  pointer-events: none;
+}
+
+/* ---- the reading column becomes the painting field 畫心 ------------ */
+.scroll-mount .page {
+  position: relative;
+  z-index: 1;
+  max-width: 880px;
+  margin: 0 auto;
+  border-radius: 2px;
+  /* aged silk/paper texture: layered warm gradients + faint fibre noise */
+  background-color: var(--paper);
+  background-image:
+    radial-gradient(ellipse at 18% 8%, color-mix(in oklab, var(--paper) 60%, white 22%), transparent 42%),
+    radial-gradient(ellipse at 82% 96%, color-mix(in oklab, var(--silk) 22%, transparent), transparent 46%),
+    repeating-linear-gradient(0deg,
+      color-mix(in oklab, var(--silk-edge) 7%, transparent) 0 1px,
+      transparent 1px 4px),
+    linear-gradient(180deg,
+      color-mix(in oklab, var(--paper) 96%, white 4%),
+      color-mix(in oklab, var(--paper) 92%, var(--silk) 6%));
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklab, white 30%, transparent),
+    inset 0 0 60px color-mix(in oklab, var(--silk) 16%, transparent);
+  padding: var(--space-7) clamp(var(--space-4), 4vw, var(--space-7)) var(--space-8);
+}
+/* faint SVG-noise fibre overlay over the paper (decorative) */
+.scroll-mount .page::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  opacity: 0.5;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+}
+@media (prefers-color-scheme: dark) {
+  .scroll-mount .page::after { mix-blend-mode: screen; opacity: 0.35; }
+}
+
+/* ---- Ink the reading column: text on paper must read as sumi ink --- */
+.scroll-mount .page,
+.scroll-mount .page p { color: var(--ink); }
+.scroll-mount .page .lede,
+.scroll-mount .page .meta,
+.scroll-mount .page .hint,
+.scroll-mount .page .stub-note,
+.scroll-mount .page figure.diagram figcaption,
+.scroll-mount .page .emaki figcaption { color: var(--ink-muted); }
+.scroll-mount .page h1,
+.scroll-mount .page h2,
+.scroll-mount .page h3,
+.scroll-mount .page h4 { color: var(--ink); }
+/* code on paper: warm sunk paper, dark ink */
+.scroll-mount .page code {
+  background: color-mix(in oklab, var(--paper-deep) 80%, var(--silk) 20%);
+  border-color: color-mix(in oklab, var(--silk-edge) 40%, transparent);
+  color: var(--ink);
+}
+/* hero 朝霧 watermark + glow tuned onto paper */
+.scroll-mount .page .ja-large { color: color-mix(in oklab, var(--ink-muted) 70%, var(--silk-edge)); }
+.scroll-mount .page .scroll-cue { color: var(--ink-muted); }
+
+/* surfaces inside the painting field: lift glassy ryumu panels onto paper
+   so they read like inset cartouches on the scroll, not floating glass. */
+.scroll-mount .page .flow-node,
+.scroll-mount .page figure.diagram,
+.scroll-mount .page details.stage,
+.scroll-mount .page .demo-shell,
+.scroll-mount .page .gate,
+.scroll-mount .page .idea-card {
+  background-color: color-mix(in oklab, var(--paper-deep) 90%, white 4%);
+  border-color: color-mix(in oklab, var(--silk-edge) 45%, transparent);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.scroll-mount .page .flow-node p,
+.scroll-mount .page details.stage .body p,
+.scroll-mount .page .idea-oneliner { color: var(--ink); }
+.scroll-mount .page .flow-node .kicker,
+.scroll-mount .page .stage .summary-text .sub,
+.scroll-mount .page .idea-head .idnum,
+.scroll-mount .page .score { color: var(--ink-muted); }
+.scroll-mount .page .run-log .log-line {
+  background: color-mix(in oklab, var(--paper-deep) 82%, var(--silk) 18%);
+  border-color: color-mix(in oklab, var(--silk-edge) 35%, transparent);
+}
+.scroll-mount .page .run-log .log-line .text { color: var(--ink); }
+.scroll-mount .page .run-log .log-line .stamp { color: var(--ink-muted); }
+
+/* ---- 地軸 bottom roller with 軸頭 knobs ---------------------------- */
+.scroll-bottom {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  margin-top: -4px;
+  z-index: 3;
+}
+.bottom-roller {
+  position: relative;
+  width: 100%;
+  max-width: 980px;
+  height: 30px;
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg,
+      color-mix(in oklab, var(--roller) 70%, white 16%) 0%,
+      var(--roller) 40%,
+      color-mix(in oklab, var(--roller) 70%, black 30%) 100%);
+  box-shadow: var(--shadow-sm), inset 0 1px 0 rgba(255,255,255,0.12);
+}
+.bottom-roller .knob { width: 34px; height: 34px; }
+.bottom-roller .knob-l { left: -18px; }
+.bottom-roller .knob-r { right: -18px; }
+
+/* =========================================================================
+ * 雲斷 / MIST SCENE-BREAKS  — drifting cloud bands between scenes (decor)
+ * ========================================================================= */
+.scene-break {
+  position: relative;
+  height: clamp(56px, 9vw, 92px);
+  margin: var(--space-7) calc(-1 * clamp(var(--space-4), 4vw, var(--space-7)));
+  overflow: hidden;
+  pointer-events: none;
+}
+.scene-break .mist-band {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.scene-break .mist-band path { fill: var(--mist-band); }
+.scene-break .mist-band .band-2 { fill: color-mix(in oklab, var(--mist-band) 70%, white 16%); }
+.scene-break .band-drift {
+  animation: band-drift 26s ease-in-out infinite alternate;
+}
+.scene-break .band-drift-rev {
+  animation: band-drift-rev 32s ease-in-out infinite alternate;
+}
+@keyframes band-drift {
+  from { transform: translateX(-30px); }
+  to   { transform: translateX(30px); }
+}
+@keyframes band-drift-rev {
+  from { transform: translateX(30px); }
+  to   { transform: translateX(-30px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .scene-break .band-drift,
+  .scene-break .band-drift-rev { animation: none; }
+}
+
+/* =========================================================================
+ * SCENE MARKERS + 印章 SEALS + 水墨 BRUSH RULES
+ * ========================================================================= */
+.scene-mark {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0 0 var(--space-3);
+}
+.scene-mark .scene-no {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--seal-text);     /* paired with the seal, but also a text label */
+}
+
+/* red seal stamp (落款 / 印章): square cinnabar block, glyph carved in paper */
+.seal {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  background: var(--seal);
+  border-radius: 4px;
+  box-shadow:
+    inset 0 0 0 1px color-mix(in oklab, var(--seal) 50%, black 28%),
+    var(--shadow-sm);
+}
+.seal svg { display: block; }
+.seal svg path,
+.seal svg use { fill: var(--paper-slip); }   /* carved glyph = paper, ~5.5:1 */
+.seal-scene { width: 38px; height: 38px; padding: 4px; }
+.seal-scene svg { width: 30px; height: 30px; }
+
+/* brush-stroke rule introducing a section header (水墨) */
+.brush-head {
+  position: relative;
+  padding-top: var(--space-3);
+}
+.brush-head::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: clamp(120px, 26%, 200px);
+  height: 6px;
+  border-radius: 6px 6px 6px 2px;
+  background:
+    radial-gradient(ellipse at 0% 50%, var(--ink) 60%, transparent),
+    linear-gradient(90deg, var(--ink) 0%, color-mix(in oklab, var(--ink) 50%, transparent) 78%, transparent);
+  /* tapered sumi brush stroke */
+  clip-path: polygon(0 35%, 88% 0%, 100% 50%, 88% 100%, 0 65%);
+  opacity: 0.85;
+}
+
+/* =========================================================================
+ * 絵巻 HORIZONTAL PIPELINE STRIP — keyboard-scrollable region + fallback
+ * ========================================================================= */
+.emaki {
+  position: relative;
+  margin: var(--space-5) 0;
+}
+.emaki-viewport {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x proximity;
+  border-radius: var(--radius-lg);
+  border: 1px solid color-mix(in oklab, var(--silk-edge) 55%, transparent);
+  background-color: var(--paper);
+  background-image:
+    repeating-linear-gradient(0deg,
+      color-mix(in oklab, var(--silk-edge) 6%, transparent) 0 1px,
+      transparent 1px 5px),
+    linear-gradient(180deg,
+      color-mix(in oklab, var(--paper) 96%, white 4%),
+      color-mix(in oklab, var(--paper) 90%, var(--silk) 8%));
+  box-shadow: inset 0 0 36px color-mix(in oklab, var(--silk) 14%, transparent);
+  cursor: grab;
+  scrollbar-color: var(--silk-edge) transparent;
+}
+.emaki-viewport.is-dragging { cursor: grabbing; user-select: none; }
+.emaki-viewport:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.emaki-viewport::-webkit-scrollbar { height: 10px; }
+.emaki-viewport::-webkit-scrollbar-thumb {
+  background: color-mix(in oklab, var(--silk-edge) 70%, transparent);
+  border-radius: 999px;
+}
+.emaki-strip {
+  display: block;
+  height: clamp(220px, 30vw, 300px);
+  width: 1640px;          /* intrinsic horizontal scroll length */
+  max-width: none;
+}
+/* paper roller edges flanking the open handscroll (decorative) */
+.emaki-edge {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 14px;
+  pointer-events: none;
+  z-index: 2;
+}
+.emaki-edge-l {
+  left: 0;
+  background: linear-gradient(90deg,
+    color-mix(in oklab, var(--silk) 60%, transparent), transparent);
+  border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+}
+.emaki-edge-r {
+  right: 0;
+  background: linear-gradient(270deg,
+    color-mix(in oklab, var(--silk) 60%, transparent), transparent);
+  border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+}
+.emaki figcaption {
+  margin-top: var(--space-3);
+  font-size: 0.875rem;
+  color: var(--ink-muted);
+}
+.emaki figcaption .emaki-hint {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  margin-top: 2px;
+  color: var(--ink-muted);
+}
+
+/* the vertical fallback list (always in DOM via JS, shown only narrow).
+   Default = hidden on wide screens; the <=640px media query below flips it. */
+.emaki-fallback { display: none; margin-top: var(--space-3); }
+
+/* Vertical stacked fallback at <=640px: NO forced horizontal scroll.
+   The horizontal SVG strip is removed from layout AND the AT tree; the
+   vertical text list (same six scenes, same meaning) takes over. Placed
+   AFTER the default rule so the cascade resolves to the narrow behavior. */
+@media (max-width: 640px) {
+  .emaki-viewport {
+    /* fully drop the horizontal handscroll on narrow: no scroll, not a
+       focus target, hidden from AT — the vertical fallback replaces it. */
+    display: none;
+  }
+  .emaki-edge { display: none; }
+  .emaki-fallback { display: block; }
+}
+.emaki-fallback ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-2);
+}
+.emaki-fallback li {
+  display: grid;
+  gap: 2px;
+  padding: var(--space-3);
+  border: 1px solid color-mix(in oklab, var(--silk-edge) 40%, transparent);
+  border-left: 3px solid var(--seal);
+  border-radius: var(--radius);
+  background: color-mix(in oklab, var(--paper-deep) 88%, white 4%);
+}
+.emaki-fallback .ef-step {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--seal-text);
+}
+.emaki-fallback .ef-title { font-family: var(--font-display); font-weight: 600; color: var(--ink); }
+.emaki-fallback .ef-sub { font-family: var(--font-mono); font-size: 0.8125rem; color: var(--ink-muted); }
+
+/* =========================================================================
+ * 印章 verified seal as the "generated/verified" badge on idea cards
+ * ========================================================================= */
+.idea-card { position: relative; }
+.idea-card .idea-seal {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  z-index: 1;
+}
+.idea-card .idea-seal .seal-stamp {
+  width: 40px; height: 40px; padding: 4px;
+  /* slight authentic tilt of a hand-pressed seal */
+  transform: rotate(-5deg);
+}
+.idea-card .idea-seal .seal-stamp svg { width: 32px; height: 32px; }
+/* the badge is INFORMATIONAL here, so it carries a visible text label too —
+   meaning is not conveyed by the red seal color alone. */
+.idea-card .idea-seal .seal-label {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--seal-text);
+  white-space: nowrap;
+}
+@media (max-width: 480px) {
+  .idea-card .idea-seal .seal-label { display: none; }
+  .idea-card .idea-head { padding-right: 48px; }
+}
+
+/* Keep the existing ryumu mist subtle behind the paper scroll so the scroll
+   reads as the figure and the steel-blue mist as the ground. */
+.scroll-mount { /* paper sits above the fixed mist layers via z-index:1 */ }

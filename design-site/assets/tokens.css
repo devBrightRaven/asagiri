@@ -34,6 +34,31 @@
 
   --danger: oklch(0.50 0.18 25);
 
+  /* ---------------------------------------------------------------------
+   * 卷軸 emaki scope — warm paper / silk-brocade mounting / cinnabar seal.
+   * Layered over the Ryūmu steel-blue base; used only for the scroll
+   * mounting, title slip, seals, and brush rules. Every text-on-bg pair
+   * below is contrast-checked (desaturated 2026-06-03 to reduce yellow,
+   * holding lightness so ratios are preserved): ink/paper 12.8:1,
+   * ink-muted/paper 6.8:1, seal-text/paper 5.4:1, all >= 4.5 AA. The
+   * cinnabar seal glyph is decorative (aria-hidden + visible text label).
+   * Hex (not oklch) so contrast math is exact and stable across engines.
+   * ------------------------------------------------------------------- */
+  --paper:       #eae8e2;          /* 畫心 painting-field paper (desaturated — less yellow) */
+  --paper-deep:  #e2ded5;          /* sunk paper for inset panels */
+  --paper-slip:  #f0ede6;          /* lighter slip for the 題簽 title slip */
+  --silk:        #2d7a7c;          /* 裝裱 brocade mounting band (vivid teal) */
+  --silk-edge:   #1f5e60;          /* darker teal brocade edge / key-fret line */
+  --silk-deep:   #174a4d;          /* deepest teal brocade, roller wrap */
+  --seal:        #c0371d;          /* 印章 cinnabar seal fill (vivid) */
+  --seal-text:   #9e2f1c;          /* seal label as text on paper (6.0:1) */
+  --ink:         #26231f;          /* 墨 sumi ink — primary text on paper */
+  --ink-muted:   #524d45;          /* muted ink — secondary text on paper */
+  --roller:      #4a3b2a;          /* 軸 roller wood */
+  --roller-knob: #2e2418;          /* 軸頭 roller-knob endcap */
+  --cord:        #174a4d;          /* 掛繩 hanging cord (teal) */
+  --mist-band:   oklch(0.97 0.012 235 / 78%); /* 雲斷 cloud-band fill */
+
   /* Radii / spacing */
   --radius: 0.5rem;
   --radius-lg: 1rem;
@@ -81,6 +106,23 @@
 
     --shadow-sm: 0 1px 2px oklch(0 0 0 / 30%);
     --shadow-md: 0 12px 40px oklch(0 0 0 / 40%);
+
+    /* Emaki scope — deep aged paper read by warm parchment ink.
+     * ink/paper 11.8:1, ink-muted/paper 6.8:1, slip-glyph/seal 5.7:1. */
+    --paper:       #232220;
+    --paper-deep:  #1d1c19;
+    --paper-slip:  #2a2926;
+    --silk:        #2a6e70;
+    --silk-edge:   #3f9aa0;
+    --silk-deep:   #16484b;
+    --seal:        #c75337;        /* seal-square fill, dark (vivid) */
+    --seal-text:   #e58a6c;        /* readable seal label on deep paper (>4.5) */
+    --ink:         #e6e2d8;
+    --ink-muted:   #b0a99b;
+    --roller:      #2e2418;
+    --roller-knob: #1a140d;
+    --cord:        #16484b;
+    --mist-band:   oklch(0.24 0.018 240 / 80%);
   }
 }
 
@@ -92,6 +134,14 @@
     --border-soft: oklch(0.70 0.018 240);
     --accent: oklch(0.34 0.13 215);
     --bg-elev: oklch(0.99 0.005 235 / 92%);
+    /* Emaki: deepen ink/silk, darken seal text for max separation. */
+    --paper:       #f0ede6;
+    --paper-deep:  #e8e3d7;
+    --ink:         #1c1a16;
+    --ink-muted:   #423d35;
+    --silk-edge:   #155257;
+    --seal:        #8f2916;
+    --seal-text:   #8f2916;
   }
 }
 @media (prefers-contrast: more) and (prefers-color-scheme: dark) {
@@ -101,5 +151,12 @@
     --border-soft: oklch(0.45 0.020 240);
     --accent: oklch(0.82 0.14 200);
     --bg-elev: oklch(0.26 0.018 240 / 85%);
+    /* Emaki dark high-contrast: lighten ink, brighten seal text. */
+    --paper:       #282623;
+    --paper-deep:  #201f1c;
+    --ink:         #f0ede6;
+    --ink-muted:   #c6bfb1;
+    --seal:        #cf5a40;
+    --seal-text:   #ee9a80;
   }
 }
