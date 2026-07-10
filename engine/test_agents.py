@@ -10,6 +10,7 @@ from agents import (
     AgentSpec,
     AgentError,
     REGISTRY,
+    dispatch_consensus,
     detect_available,
     dispatch,
 )
@@ -156,6 +157,22 @@ def test_dispatch_captures_output():
     _, kwargs = mock_run.call_args
     assert kwargs.get("capture_output") is True
     assert kwargs.get("text") is True
+
+
+def test_dispatch_consensus_runs_reviewers_then_synthesizes():
+    claude = AgentSpec(name="claude", cmd_template=["claude", "-p", "{prompt}"], tier=10)
+    codex = AgentSpec(name="codex", cmd_template=["codex", "exec", "-m", "gpt-5.5", "{prompt}"], tier=9)
+    side_effects = [
+        _mock_run_success('{"title":"claude"}'),
+        _mock_run_success('{"title":"codex"}'),
+        _mock_run_success('{"title":"merged"}'),
+    ]
+    with patch("agents.subprocess.run", side_effect=side_effects) as mock_run:
+        result = dispatch_consensus("make json", [claude, codex])
+    assert result.agent == "claude"
+    assert result.reviewers == ("claude", "codex")
+    assert result.output == '{"title":"merged"}'
+    assert mock_run.call_count == 3
 
 
 # --- REGISTRY shape ---

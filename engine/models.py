@@ -25,6 +25,8 @@ class Idea:
     user_note: Optional[str] = None
     review_dates: tuple[str, ...] = ()
     status: str = "new"
+    market_score: int = 3
+    market_rationale: str = ""
 
     def to_dict(self) -> dict:
         d = asdict(self)

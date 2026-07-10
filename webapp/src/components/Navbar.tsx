@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 const NAV_LINKS = [
   { href: "/", label: "Ritual" },
   { href: "/dashboard", label: "Dashboard" },
+  { href: "/ideabrowser-seeds", label: "Ideabrowser" },
   { href: "/kanban", label: "Kanban" },
   { href: "/territory", label: "Territory" },
   { href: "/settings", label: "Settings" },

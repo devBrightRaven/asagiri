@@ -10,6 +10,8 @@ export interface Idea {
   moat_analysis: string;
   feasibility_score: number;
   novelty_score: number;
+  market_score?: number;
+  market_rationale?: string;
   sources: string[];
   tags: string[];
   created_at: string;
@@ -30,8 +32,15 @@ export interface Interactions {
   ratings: Record<string, number>;
   notes: Record<string, string>;
   statuses: Record<string, Idea["status"]>;
+  idea_scores: Record<string, IdeaMarketScore>;
   connections: ConnectionEntry[];
   ritual_completions: string[];
+}
+
+export interface IdeaMarketScore {
+  feasibility: number | null;
+  market: number | null;
+  updated_at: string;
 }
 
 export interface ConnectionEntry {
@@ -54,3 +63,24 @@ export interface Stats {
   total_domains: number;
   domain_counts: Record<string, number>;
 }
+
+export interface IdeabrowserSeed {
+  id: string;
+  title: string;
+  seed_type: string;
+  asagiri_domains: string[];
+  email_date: string;
+  teaser: string | null;
+  url: string;
+  gmail_message_id: string;
+  email_subject: string;
+  extracted_at: string;
+}
+
+export interface IdeabrowserSeedScore {
+  feasibility: number | null;
+  market: number | null;
+  updated_at: string;
+}
+
+export type IdeabrowserSeedScores = Record<string, IdeabrowserSeedScore>;

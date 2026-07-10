@@ -9,6 +9,10 @@ __pycache__/
 *.pyc
 *.log
 003-nexusforge/
+.codegraph/
+.cursor/
+.playwright-mcp/
+engine/engine/
 
 # infra: local settings with secrets
 infra/searxng/settings.yml

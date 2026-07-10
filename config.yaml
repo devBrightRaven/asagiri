@@ -45,7 +45,7 @@ output:
 #
 # Tier table (hand-curated quality estimate):
 #   claude (Claude Code, Sonnet 4.6 / Opus 4.7) = 10
-#   codex  (codex-cli, GPT-5.3)                 =  9
+#   codex  (codex-cli, GPT-5.5)                 =  9
 #   gemini (gemini-cli, Flash default)          =  7
 #   ollama (local model, varies)                =  6
 #
@@ -53,6 +53,7 @@ output:
 # gemini, to 6 to add ollama (also requires OLLAMA_MODEL env var).
 agents:
   min_tier: 8
+  consensus: true   # run Claude + Codex, then synthesize one final JSON
   search_n: 8         # number of SearXNG snippets pulled per idea
   dispatch_timeout: 180  # subprocess timeout per CLI agent call (seconds)
   # ollama_model: "qwen2.5:7b"  # uncomment to include local ollama in chain
@@ -73,3 +74,7 @@ purpose:
 search:
   max_sources_per_idea: 3
   language: "en"
+
+seeds:
+  ideabrowser_path: "C:/Code/products/002-asagiri/data/ideabrowser-seeds/ideabrowser-opportunity-seeds.jsonl"
+  max_items_per_domain: 3

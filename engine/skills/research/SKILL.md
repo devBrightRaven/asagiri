@@ -16,6 +16,14 @@ Recent web context:
 {{ search_context }}
 
 Use the context to ground your idea in real signals (pain points, trends, market size). Be specific and data-driven; cite at least one URL from the context.
+
+Market feasibility must judge whether this is worth deeper Asagiri research:
+- pain: frequency, urgency, cost of the problem
+- buyer: who pays and whether buyer/user are aligned
+- budget: existing spend or replacement behavior
+- reach: whether the target segment is reachable through practical channels
+- wedge: whether there is a narrow enough entry point despite competitors
+- evidence: whether the claim is supported by sources, search results, competitors, jobs, forums, or other signals
 {% if purpose_lens %}
 
 Value lens (mandatory frame): {{ purpose_lens }}
@@ -35,6 +43,8 @@ Output ONLY a single JSON object — no markdown fences, no commentary before or
   "moat_analysis": "What defensibility — network effects, data moats, switching costs?",
   "feasibility_score": 1-5,
   "novelty_score": 1-5,
+  "market_score": 1-5,
+  "market_rationale": "2-4 sentences explaining buyer, budget, reach, wedge, and evidence quality",
   "sources": ["url1", "url2"],
   "tags": ["tag1", "tag2", "tag3"]
 }

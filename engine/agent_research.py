@@ -22,9 +22,10 @@ from typing import Sequence
 import yaml
 from dotenv import load_dotenv
 
-from agents import AgentError, AgentSpec, dispatch, detect_available
+from agents import AgentError, AgentSpec, dispatch, dispatch_consensus, detect_available
 from models import DailyResearch, Idea, compute_review_dates
 from search import SearchError, search
+from seed_context import format_seed_context, load_seed_records
 from skill_loader import load_skill
 
 # Load engine/.env so BRAVE_API_KEY / SEARXNG_URL / OLLAMA_MODEL etc. are
@@ -121,6 +122,8 @@ def research_one(
     purpose_lens: str | None = None,
     search_n: int = DEFAULT_SEARCH_N,
     dispatch_timeout: int = DEFAULT_DISPATCH_TIMEOUT_SEC,
+    seed_context: str | None = None,
+    consensus: bool = False,
 ) -> Idea:
     """Search → prompt → dispatch → parse for a single idea slot.
 
@@ -134,9 +137,14 @@ def research_one(
         search_results = []
 
     search_context = format_search_context(search_results)
+    if seed_context:
+        search_context = f"{seed_context}\n\nLive web context:\n{search_context}"
     prompt = build_research_prompt(domain, search_context, purpose_lens)
 
-    result = dispatch(prompt, list(agents_chain), timeout=dispatch_timeout)
+    if consensus:
+        result = dispatch_consensus(prompt, list(agents_chain), timeout=dispatch_timeout)
+    else:
+        result = dispatch(prompt, list(agents_chain), timeout=dispatch_timeout)
     data = parse_idea_response(result.output)
 
     return Idea(
@@ -155,6 +163,8 @@ def research_one(
         tags=tuple(data.get("tags", [])),
         created_at=datetime.now().isoformat(),
         review_dates=compute_review_dates(today_str),
+        market_score=int(data.get("market_score", 3)),
+        market_rationale=data.get("market_rationale", ""),
     )
 
 
@@ -214,6 +224,7 @@ def run_agent_research(config_path: Path) -> DailyResearch:
     dispatch_timeout = int(
         agents_config.get("dispatch_timeout", DEFAULT_DISPATCH_TIMEOUT_SEC)
     )
+    consensus = bool(agents_config.get("consensus", False))
     ollama_model = agents_config.get("ollama_model")  # None => fall back to env
 
     chain = detect_available(min_tier=min_tier, ollama_model=ollama_model)
@@ -223,10 +234,17 @@ def run_agent_research(config_path: Path) -> DailyResearch:
             "Install claude / codex / gemini-cli and ensure they're on PATH."
         )
     print(f"  Agents in chain: {' -> '.join(f'{a.name}(t{a.tier})' for a in chain)}")
+    if consensus:
+        print("  Consensus mode: enabled")
 
     today = date.today()
     today_str = today.isoformat()
     domains = _select_domains(config, today)
+    seeds_config = config.get("seeds", {})
+    seed_records = load_seed_records(seeds_config.get("ideabrowser_path"))
+    seed_max_items = int(seeds_config.get("max_items_per_domain", 3))
+    if seed_records:
+        print(f"  Ideabrowser seeds: {len(seed_records)} loaded")
     today_lens, ratio = _pick_lens_for_day(config, today)
     if today_lens:
         print(f"  Purpose lens: {today_lens.split(':')[0]}")
@@ -246,6 +264,8 @@ def run_agent_research(config_path: Path) -> DailyResearch:
                 purpose_lens=use_lens,
                 search_n=search_n,
                 dispatch_timeout=dispatch_timeout,
+                seed_context=format_seed_context(seed_records, domain, seed_max_items),
+                consensus=consensus,
             )
             ideas.append(idea)
             print(f"    -> [{result_agent_hint(idea)}] {idea.title}")
@@ -269,4 +289,3 @@ def result_agent_hint(idea: Idea) -> str:
     at the Idea level because DispatchResult is not threaded through. Future:
     extend Idea with a `served_by` field."""
     return "agent"
-

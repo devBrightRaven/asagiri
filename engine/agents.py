@@ -45,6 +45,13 @@ class DispatchResult:
     output: str
 
 
+@dataclass(frozen=True)
+class ConsensusResult:
+    agent: str
+    output: str
+    reviewers: tuple[str, ...]
+
+
 REGISTRY: dict[str, dict] = {
     "claude": {
         "binary": "claude",
@@ -54,9 +61,9 @@ REGISTRY: dict[str, dict] = {
     },
     "codex": {
         "binary": "codex",
-        "args": ["exec", "{prompt}"],
+        "args": ["exec", "-m", "gpt-5.5", "{prompt}"],
         "tier": 9,
-        "note": "codex-cli (GPT-5.3 Codex via ChatGPT auth)",
+        "note": "codex-cli (GPT-5.5 via ChatGPT auth)",
     },
     "gemini": {
         "binary": "gemini",
@@ -150,3 +157,61 @@ def dispatch(
         return DispatchResult(agent=agent.name, output=cp.stdout)
 
     raise AgentError(f"All agents failed: {' | '.join(errors)}")
+
+
+def dispatch_all(
+    prompt: str,
+    agents: Sequence[AgentSpec],
+    timeout: int = 120,
+) -> list[DispatchResult]:
+    """Run every available agent and return successful outputs."""
+    results: list[DispatchResult] = []
+    for agent in agents:
+        try:
+            results.append(dispatch(prompt, [agent], timeout=timeout))
+        except AgentError:
+            continue
+    return results
+
+
+def build_consensus_prompt(original_prompt: str, results: Sequence[DispatchResult]) -> str:
+    reviewer_outputs = "\n\n".join(
+        f"Reviewer: {result.agent}\nOutput:\n{result.output.strip()}"
+        for result in results
+    )
+    return f"""You are the final Asagiri research integrator.
+
+Original task:
+{original_prompt}
+
+Independent reviewer outputs:
+{reviewer_outputs}
+
+Merge the reviewers into one best answer. Preserve grounded market evidence,
+resolve conflicts, and output ONLY the final JSON object requested by the
+original task. No markdown fences, no commentary."""
+
+
+def dispatch_consensus(
+    prompt: str,
+    agents: Sequence[AgentSpec],
+    timeout: int = 120,
+) -> ConsensusResult:
+    """Run all agents, then synthesize successful outputs into one JSON result."""
+    results = dispatch_all(prompt, agents, timeout=timeout)
+    if not results:
+        raise AgentError("All consensus reviewers failed")
+    if len(results) == 1:
+        only = results[0]
+        return ConsensusResult(
+            agent=only.agent,
+            output=only.output,
+            reviewers=(only.agent,),
+        )
+
+    synth = dispatch(build_consensus_prompt(prompt, results), agents[:1], timeout=timeout)
+    return ConsensusResult(
+        agent=synth.agent,
+        output=synth.output,
+        reviewers=tuple(result.agent for result in results),
+    )

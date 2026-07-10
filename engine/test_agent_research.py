@@ -14,6 +14,7 @@ from agent_research import (
     research_one,
 )
 from agents import AgentSpec, DispatchResult
+from seed_context import format_seed_context
 
 
 # --- prompt building ---
@@ -144,6 +145,64 @@ def test_research_one_orchestrates_search_and_dispatch():
     prompt_arg = mock_dispatch.call_args.args[0]
     assert "T1" in prompt_arg
     assert "AI/ML" in prompt_arg
+
+
+def test_research_one_threads_seed_context_into_prompt():
+    fake_payload = {
+        "title": "T", "domain": "AI/ML", "one_liner": "OL",
+        "problem": "P", "solution": "S", "market_size": "M",
+        "competitors": [], "moat_analysis": "MA",
+        "feasibility_score": 3, "novelty_score": 3,
+        "sources": [], "tags": [],
+    }
+    agent = AgentSpec(name="claude", cmd_template=["claude", "-p", "{prompt}"], tier=10)
+    with patch("agent_research.search", return_value=[]), \
+         patch("agent_research.dispatch", return_value=DispatchResult(agent="claude", output=json.dumps(fake_payload))) as mock_dispatch:
+        research_one(
+            domain="AI/ML",
+            idea_id="2026-05-16-006",
+            today_str="2026-05-16",
+            agents_chain=[agent],
+            seed_context="Relevant Ideabrowser seeds:\n- Repairing AI search",
+        )
+    assert "Repairing AI search" in mock_dispatch.call_args.args[0]
+
+
+def test_research_one_can_use_consensus_dispatch():
+    fake_payload = {
+        "title": "Consensus idea", "domain": "AI/ML", "one_liner": "OL",
+        "problem": "P", "solution": "S", "market_size": "M",
+        "competitors": [], "moat_analysis": "MA",
+        "feasibility_score": 4, "novelty_score": 3,
+        "market_score": 5, "market_rationale": "Strong buyer and budget signals.",
+        "sources": [], "tags": [],
+    }
+    agent = AgentSpec(name="claude", cmd_template=["claude", "-p", "{prompt}"], tier=10)
+    with patch("agent_research.search", return_value=[]), \
+         patch("agent_research.dispatch_consensus", return_value=DispatchResult(agent="claude", output=json.dumps(fake_payload))) as mock_consensus:
+        idea = research_one(
+            domain="AI/ML",
+            idea_id="2026-05-16-007",
+            today_str="2026-05-16",
+            agents_chain=[agent],
+            consensus=True,
+        )
+    assert idea.title == "Consensus idea"
+    assert idea.market_score == 5
+    assert "buyer" in idea.market_rationale
+    mock_consensus.assert_called_once()
+
+
+def test_format_seed_context_filters_by_domain():
+    ctx = format_seed_context(
+        [
+            {"title": "Repairing AI search", "teaser": "Citation gap", "asagiri_domains": ["AI/ML"], "seed_type": "main_idea", "url": "https://x"},
+            {"title": "Clinic ops", "teaser": "Healthcare", "asagiri_domains": ["Health Tech"], "seed_type": "main_idea", "url": "https://y"},
+        ],
+        "AI/ML",
+    )
+    assert "Repairing AI search" in ctx
+    assert "Clinic ops" not in ctx
 
 
 def test_research_one_passes_lens_to_prompt():
