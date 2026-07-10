@@ -1,0 +1,35 @@
+use_default_settings: true
+
+general:
+  instance_name: "asagiri-searxng"
+  contact_url: false
+  enable_metrics: false
+
+server:
+  # Generate with: python -c "import secrets; print(secrets.token_hex(32))"
+  secret_key: "REPLACE_ME_WITH_32_BYTE_HEX"
+  limiter: false
+  image_proxy: false
+  bind_address: "0.0.0.0"
+  port: 8080
+  base_url: "http://localhost:8888/"
+  public_instance: false
+  http_protocol_version: "1.1"
+
+ui:
+  static_use_hash: true
+
+search:
+  safe_search: 0
+  autocomplete: ""
+  default_lang: "en"
+  formats:
+    - html
+    - json
+
+outgoing:
+  request_timeout: 6.0
+  max_request_timeout: 12.0
+  pool_connections: 100
+  pool_maxsize: 20
+  enable_http2: true

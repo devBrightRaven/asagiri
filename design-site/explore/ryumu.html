@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>流霧 Ryūmu — Asagiri direction B</title>
+  <meta name="description" content="Direction B: drifting mist, kinetic atmosphere. Field.io kinetic poetics.">
+  <style>
+    /* === 流霧 Ryūmu — drifting mist ===
+     * Foundation: Field.io kinetic poetics + atmospheric depth.
+     * Mood: mist is a living thing. The page is air moving over water at 5am.
+     * Color: pre-dawn cool palette — pale steel + lavender + faint sunrise
+     *        warmth at the bottom edge.
+     * Animation: BIG. 3 mist layers drift, glow pulses, theme transitions
+     *            dissolve. All slow, all reduced-motion respecting.
+     * Dew: real droplet animations condensing on card edges on hover.
+     */
+    :root {
+      --bg-base: oklch(0.94 0.014 235);          /* pre-dawn pale steel-blue */
+      --bg-warm: oklch(0.93 0.018 50 / 25%);     /* sunrise hint */
+      --bg-elev: oklch(0.97 0.008 235 / 70%);    /* translucent surface */
+      --fg: oklch(0.22 0.025 245);
+      --fg-muted: oklch(0.46 0.022 240);
+      --accent: oklch(0.48 0.10 200);            /* mist-glow teal */
+      --accent-glow: oklch(0.65 0.13 200 / 50%);
+      --dew: oklch(0.98 0.015 235);
+      --border: oklch(0.78 0.018 235 / 60%);
+
+      --font-sans: "Inter", "Hiragino Kaku Gothic ProN", "Noto Sans CJK TC", system-ui, sans-serif;
+      --font-display: "Inter", "Hiragino Mincho ProN", "Noto Serif CJK TC", serif;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-base: oklch(0.14 0.020 245);          /* deep pre-dawn indigo */
+        --bg-warm: oklch(0.30 0.035 35 / 18%);     /* very subtle warmth */
+        --bg-elev: oklch(0.20 0.018 240 / 60%);
+        --fg: oklch(0.90 0.010 235);
+        --fg-muted: oklch(0.65 0.020 240);
+        --accent: oklch(0.72 0.13 200);
+        --accent-glow: oklch(0.78 0.14 200 / 50%);
+        --dew: oklch(0.95 0.010 235);
+        --border: oklch(0.40 0.020 235 / 60%);
+      }
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { min-height: 100%; }
+    body {
+      margin: 0;
+      color: var(--fg);
+      font-family: var(--font-sans);
+      font-size: 17px;
+      line-height: 1.65;
+      letter-spacing: 0.005em;
+      background:
+        radial-gradient(ellipse at 80% 110%, var(--bg-warm), transparent 50%),
+        var(--bg-base);
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Three drifting mist layers behind everything. SVG noise textures
+       with very slow translateX loops. Stack with different opacities. */
+    .mist {
+      position: fixed;
+      inset: -10%;
+      pointer-events: none;
+      z-index: 0;
+      mix-blend-mode: screen;
+      opacity: 0.55;
+    }
+    @media (prefers-color-scheme: dark) {
+      .mist { mix-blend-mode: lighten; opacity: 0.35; }
+    }
+    .mist-a { animation: drift-a 60s linear infinite; }
+    .mist-b { animation: drift-b 90s linear infinite; opacity: 0.4; }
+    .mist-c { animation: drift-c 120s linear infinite; opacity: 0.3; }
+
+    @keyframes drift-a {
+      0% { transform: translate3d(-5%, 2%, 0); }
+      50% { transform: translate3d(5%, -3%, 0); }
+      100% { transform: translate3d(-5%, 2%, 0); }
+    }
+    @keyframes drift-b {
+      0% { transform: translate3d(3%, -2%, 0); }
+      50% { transform: translate3d(-4%, 3%, 0); }
+      100% { transform: translate3d(3%, -2%, 0); }
+    }
+    @keyframes drift-c {
+      0% { transform: translate3d(-2%, 4%, 0); }
+      50% { transform: translate3d(4%, -2%, 0); }
+      100% { transform: translate3d(-2%, 4%, 0); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .mist-a, .mist-b, .mist-c { animation: none; }
+    }
+
+    .stage {
+      position: relative;
+      z-index: 1;
+      max-width: 880px;
+      margin: 0 auto;
+      padding: clamp(2.5rem, 5vw, 5rem) clamp(1.25rem, 3vw, 2.5rem) 6rem;
+    }
+
+    .top {
+      display: flex;
+      align-items: baseline;
+      gap: 1rem;
+      margin-bottom: 5rem;
+    }
+    .mark {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+    }
+    .mark .ja { color: var(--fg-muted); font-size: 1.1rem; margin-left: 0.3em; font-weight: 400; }
+    .direction {
+      margin-left: auto;
+      font-size: 0.8125rem;
+      color: var(--fg-muted);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      font-family: var(--font-display);
+      font-weight: 500;
+      font-size: clamp(2.25rem, 5.5vw, 3.75rem);
+      line-height: 1.15;
+      margin: 0 0 2rem;
+      letter-spacing: -0.015em;
+      animation: breath 8s ease-in-out infinite;
+    }
+    @keyframes breath {
+      0%, 100% { letter-spacing: -0.015em; }
+      50%      { letter-spacing: -0.005em; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      h1 { animation: none; }
+    }
+    h1 .glow {
+      color: var(--accent);
+      text-shadow: 0 0 24px var(--accent-glow);
+    }
+    .lede {
+      max-width: 36em;
+      color: var(--fg-muted);
+      font-size: 1.0625rem;
+      margin: 0 0 5rem;
+    }
+
+    h2 {
+      font-family: var(--font-display);
+      font-weight: 500;
+      font-size: 1.5rem;
+      letter-spacing: -0.005em;
+      margin: 4rem 0 2rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
+      gap: 1.25rem;
+    }
+    .card {
+      position: relative;
+      background: var(--bg-elev);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.75rem 1.5rem;
+      backdrop-filter: blur(20px) saturate(110%);
+      -webkit-backdrop-filter: blur(20px) saturate(110%);
+      overflow: hidden;
+      transition: transform 600ms cubic-bezier(0.2, 0.8, 0.2, 1),
+                  box-shadow 600ms ease,
+                  border-color 600ms ease;
+    }
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: var(--accent);
+      box-shadow: 0 12px 40px oklch(0.4 0.08 235 / 18%);
+    }
+    /* Dew that condenses on hover */
+    .card::before {
+      content: "";
+      position: absolute;
+      top: 12px;
+      right: 16px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, var(--dew), oklch(0.7 0.04 235 / 0%));
+      opacity: 0;
+      transform: translateY(-4px);
+      transition: opacity 700ms ease, transform 700ms ease;
+    }
+    .card:hover::before {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .card { transition: border-color 200ms; }
+      .card:hover { transform: none; }
+      .card::before { transition: opacity 200ms; }
+    }
+    .card .tag {
+      display: inline-block;
+      font-size: 0.6875rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1rem;
+    }
+    .card h3 {
+      font-family: var(--font-display);
+      font-weight: 500;
+      font-size: 1.25rem;
+      margin: 0 0 0.5rem;
+    }
+    .card p { color: var(--fg-muted); font-size: 0.9375rem; margin: 0; }
+
+    .footer-stamp {
+      margin-top: 6rem;
+      padding-top: 3rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-size: 0.875rem;
+      color: var(--fg-muted);
+    }
+    .footer-stamp .name { font-family: var(--font-display); font-size: 1rem; color: var(--fg); }
+  </style>
+</head>
+<body>
+  <!-- Three SVG noise mist layers, drifting at different speeds -->
+  <svg class="mist mist-a" aria-hidden="true">
+    <filter id="noise-a"><feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="2" seed="1"/></filter>
+    <rect width="100%" height="100%" filter="url(#noise-a)" opacity="0.5"/>
+  </svg>
+  <svg class="mist mist-b" aria-hidden="true">
+    <filter id="noise-b"><feTurbulence type="fractalNoise" baseFrequency="0.4" numOctaves="3" seed="2"/></filter>
+    <rect width="100%" height="100%" filter="url(#noise-b)" opacity="0.4"/>
+  </svg>
+  <svg class="mist mist-c" aria-hidden="true">
+    <filter id="noise-c"><feTurbulence type="fractalNoise" baseFrequency="0.25" numOctaves="2" seed="3"/></filter>
+    <rect width="100%" height="100%" filter="url(#noise-c)" opacity="0.35"/>
+  </svg>
+
+  <main class="stage">
+    <div class="top">
+      <span class="mark">Asagiri <span class="ja" lang="ja">朝霧</span></span>
+      <span class="direction">Direction B · 流霧</span>
+    </div>
+
+    <h1>
+      The day has not yet<br>
+      <span class="glow">condensed</span> into shape.
+    </h1>
+    <p class="lede">
+      Asagiri runs every morning before the world decides what it is. Ten
+      possibilities, born from the night's accumulated signal, drift across
+      the surface like vapour finding a window. Most will burn off by
+      mid-morning. The few that remain are the ones worth touching.
+    </p>
+
+    <h2>Three surfaces</h2>
+    <div class="grid">
+      <article class="card">
+        <span class="tag">engine</span>
+        <h3>Engine</h3>
+        <p>Thin orchestrator over four CLI agents. Local SearXNG for context.
+           No vendor SDK on the hot path.</p>
+      </article>
+      <article class="card">
+        <span class="tag">webapp</span>
+        <h3>Webapp</h3>
+        <p>A Next.js dashboard for browsing the day's ideas. Ritual, Kanban,
+           Territory, Settings.</p>
+      </article>
+      <article class="card">
+        <span class="tag">widget</span>
+        <h3>Sasagani widget</h3>
+        <p>A 7 KB drop-in fragment-capture button. Always docked, never
+           blocking the page beneath it.</p>
+      </article>
+    </div>
+
+    <div class="footer-stamp">
+      <span><span class="name">朝霧</span> · Bright Raven</span>
+      <span>v 0.4 · 2026</span>
+    </div>
+  </main>
+</body>
+</html>

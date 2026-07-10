@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useCallback } from "react";
 import { format, parseISO, isWithinInterval } from "date-fns";
-import { ChevronUp, ChevronDown, ChevronsUpDown, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronUp, ChevronDown, ChevronsUpDown, Search, ChevronLeft, ChevronRight, FileOutput } from "lucide-react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import type { Idea, Interactions } from "@/lib/types";
 import { Input } from "@/components/ui/input";
@@ -16,7 +16,7 @@ interface IdeaTableProps {
   interactions: Interactions;
 }
 
-type SortField = "date" | "title" | "domain" | "feasibility_score" | "novelty_score" | "status" | "rating";
+type SortField = "date" | "title" | "domain" | "feasibility" | "market" | "priority" | "status";
 type SortDir = "asc" | "desc";
 
 const PAGE_SIZE = 15;
@@ -33,12 +33,20 @@ function getEffectiveStatus(idea: IdeaWithDate, interactions: Interactions): Ide
   return interactions.statuses[idea.id] ?? idea.status;
 }
 
-function getRating(idea: IdeaWithDate, interactions: Interactions): number | null {
-  return interactions.ratings[idea.id] ?? idea.user_rating;
+function getIdeaScore(idea: IdeaWithDate, interactions: Interactions) {
+  return interactions.idea_scores[idea.id];
+}
+
+function priorityScore(idea: IdeaWithDate, interactions: Interactions): number | null {
+  const score = getIdeaScore(idea, interactions);
+  if (!score || score.feasibility == null || score.market == null) return null;
+  return (score.feasibility + score.market) / 2;
 }
 
 export function IdeaTable({ ideas, interactions }: IdeaTableProps) {
   const prefersReducedMotion = useReducedMotion();
+  const [localInteractions, setLocalInteractions] = useState(interactions);
+  const [handoffState, setHandoffState] = useState<Record<string, string>>({});
   const [search, setSearch] = useState("");
   const [domainFilter, setDomainFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -78,7 +86,7 @@ export function IdeaTable({ ideas, interactions }: IdeaTableProps) {
       result = result.filter((i) => i.domain === domainFilter);
     }
     if (statusFilter !== "all") {
-      result = result.filter((i) => getEffectiveStatus(i, interactions) === statusFilter);
+      result = result.filter((i) => getEffectiveStatus(i, localInteractions) === statusFilter);
     }
     if (dateFrom || dateTo) {
       result = result.filter((i) => {
@@ -90,7 +98,7 @@ export function IdeaTable({ ideas, interactions }: IdeaTableProps) {
     }
 
     return result;
-  }, [ideas, search, domainFilter, statusFilter, dateFrom, dateTo, interactions]);
+  }, [ideas, search, domainFilter, statusFilter, dateFrom, dateTo, localInteractions]);
 
   const sorted = useMemo(() => {
     const copy = [...filtered];
@@ -104,18 +112,24 @@ export function IdeaTable({ ideas, interactions }: IdeaTableProps) {
           return dir * a.title.localeCompare(b.title);
         case "domain":
           return dir * a.domain.localeCompare(b.domain);
-        case "feasibility_score":
-          return dir * (a.feasibility_score - b.feasibility_score);
-        case "novelty_score":
-          return dir * (a.novelty_score - b.novelty_score);
         case "status": {
-          const sa = STATUS_ORDER[getEffectiveStatus(a, interactions)] ?? 99;
-          const sb = STATUS_ORDER[getEffectiveStatus(b, interactions)] ?? 99;
+          const sa = STATUS_ORDER[getEffectiveStatus(a, localInteractions)] ?? 99;
+          const sb = STATUS_ORDER[getEffectiveStatus(b, localInteractions)] ?? 99;
           return dir * (sa - sb);
         }
-        case "rating": {
-          const ra = getRating(a, interactions) ?? -1;
-          const rb = getRating(b, interactions) ?? -1;
+        case "feasibility": {
+          const ra = getIdeaScore(a, localInteractions)?.feasibility ?? -1;
+          const rb = getIdeaScore(b, localInteractions)?.feasibility ?? -1;
+          return dir * (ra - rb);
+        }
+        case "market": {
+          const ra = getIdeaScore(a, localInteractions)?.market ?? -1;
+          const rb = getIdeaScore(b, localInteractions)?.market ?? -1;
+          return dir * (ra - rb);
+        }
+        case "priority": {
+          const ra = priorityScore(a, localInteractions) ?? -1;
+          const rb = priorityScore(b, localInteractions) ?? -1;
           return dir * (ra - rb);
         }
         default:
@@ -124,7 +138,7 @@ export function IdeaTable({ ideas, interactions }: IdeaTableProps) {
     });
 
     return copy;
-  }, [filtered, sortField, sortDir, interactions]);
+  }, [filtered, sortField, sortDir, localInteractions]);
 
   const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
   const paged = sorted.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
@@ -139,6 +153,62 @@ export function IdeaTable({ ideas, interactions }: IdeaTableProps) {
   function ariaSortValue(field: SortField): "ascending" | "descending" | "none" {
     if (sortField !== field) return "none";
     return sortDir === "asc" ? "ascending" : "descending";
+  }
+
+  async function updateIdeaScore(
+    ideaId: string,
+    field: "feasibility" | "market",
+    rawValue: string
+  ) {
+    const current = localInteractions.idea_scores[ideaId] ?? {
+      feasibility: null,
+      market: null,
+      updated_at: "",
+    };
+    const nextInteractions = {
+      ...localInteractions,
+      idea_scores: {
+        ...localInteractions.idea_scores,
+        [ideaId]: {
+          ...current,
+          [field]: rawValue ? Number(rawValue) : null,
+          updated_at: new Date().toISOString(),
+        },
+      },
+    };
+
+    setLocalInteractions(nextInteractions);
+
+    try {
+      const response = await fetch("api/interactions", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(nextInteractions),
+      });
+      if (!response.ok) throw new Error("Failed to save idea score");
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  async function sendToFumigarasu(idea: IdeaWithDate) {
+    setHandoffState((current) => ({ ...current, [idea.id]: "Sending..." }));
+    try {
+      const response = await fetch("api/fumigarasu-handoff", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ date: idea.date, ideaId: idea.id }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Handoff failed");
+      setHandoffState((current) => ({
+        ...current,
+        [idea.id]: result.created ? "Sent to Fumigarasu" : "Already in Fumigarasu",
+      }));
+    } catch (error) {
+      console.error(error);
+      setHandoffState((current) => ({ ...current, [idea.id]: "Handoff failed" }));
+    }
   }
 
   return (
@@ -258,10 +328,10 @@ export function IdeaTable({ ideas, interactions }: IdeaTableProps) {
                 ["date", "Date"],
                 ["title", "Title"],
                 ["domain", "Domain"],
-                ["feasibility_score", "Feasibility"],
-                ["novelty_score", "Novelty"],
+                ["feasibility", "Feas."],
+                ["market", "Market"],
+                ["priority", "Priority"],
                 ["status", "Status"],
-                ["rating", "Rating"],
               ] as [SortField, string][]).map(([field, label]) => (
                 <th
                   key={field}
@@ -291,8 +361,9 @@ export function IdeaTable({ ideas, interactions }: IdeaTableProps) {
               </tr>
             )}
             {paged.map((idea) => {
-              const status = getEffectiveStatus(idea, interactions);
-              const rating = getRating(idea, interactions);
+              const status = getEffectiveStatus(idea, localInteractions);
+              const score = getIdeaScore(idea, localInteractions);
+              const priority = priorityScore(idea, localInteractions);
               const isExpanded = expandedId === idea.id;
 
               return (
@@ -320,15 +391,53 @@ export function IdeaTable({ ideas, interactions }: IdeaTableProps) {
                     <td className="px-3 py-2">
                       <Badge variant="secondary">{idea.domain}</Badge>
                     </td>
-                    <td className="px-3 py-2 tabular-nums">{idea.feasibility_score}</td>
-                    <td className="px-3 py-2 tabular-nums">{idea.novelty_score}</td>
+                    <td className="px-3 py-2">
+                      <select
+                        value={score?.feasibility ?? ""}
+                        onClick={(e) => e.stopPropagation()}
+                        onKeyDown={(e) => e.stopPropagation()}
+                        onChange={(e) => updateIdeaScore(idea.id, "feasibility", e.target.value)}
+                        aria-label={`Feasibility score for ${idea.title}`}
+                        className="h-7 w-14 rounded border border-input bg-background px-1 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50"
+                      >
+                        <option value="">--</option>
+                        {[1, 2, 3, 4, 5].map((value) => (
+                          <option key={value} value={value}>
+                            {value}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td className="px-3 py-2">
+                      <select
+                        value={score?.market ?? ""}
+                        onClick={(e) => e.stopPropagation()}
+                        onKeyDown={(e) => e.stopPropagation()}
+                        onChange={(e) => updateIdeaScore(idea.id, "market", e.target.value)}
+                        aria-label={`Market feasibility score for ${idea.title}`}
+                        className="h-7 w-14 rounded border border-input bg-background px-1 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50"
+                      >
+                        <option value="">--</option>
+                        {[1, 2, 3, 4, 5].map((value) => (
+                          <option key={value} value={value}>
+                            {value}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td className="px-3 py-2 tabular-nums">
+                      {priority != null ? (
+                        <Badge variant={priority >= 4 ? "default" : "outline"}>
+                          {priority.toFixed(1)}
+                        </Badge>
+                      ) : (
+                        <span className="text-muted-foreground">--</span>
+                      )}
+                    </td>
                     <td className="px-3 py-2">
                       <Badge variant={status === "executing" ? "default" : "outline"}>
                         {status}
                       </Badge>
-                    </td>
-                    <td className="px-3 py-2 tabular-nums">
-                      {rating != null ? rating : <span className="text-muted-foreground">--</span>}
                     </td>
                   </tr>
                   {isExpanded && (
@@ -346,9 +455,35 @@ export function IdeaTable({ ideas, interactions }: IdeaTableProps) {
                             <p><span className="font-medium">Problem:</span> {idea.problem}</p>
                             <p><span className="font-medium">Solution:</span> {idea.solution}</p>
                             <p><span className="font-medium">Market size:</span> {idea.market_size}</p>
+                            <p>
+                              <span className="font-medium">Generated scores:</span>{" "}
+                              feasibility {idea.feasibility_score}, novelty {idea.novelty_score}
+                              {idea.market_score ? `, market ${idea.market_score}` : ""}
+                            </p>
+                            {idea.market_rationale && (
+                              <p><span className="font-medium">Market rationale:</span> {idea.market_rationale}</p>
+                            )}
                             {idea.competitors.length > 0 && (
                               <p><span className="font-medium">Competitors:</span> {idea.competitors.join(", ")}</p>
                             )}
+                            <div className="flex flex-wrap items-center gap-3 pt-2">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                disabled={handoffState[idea.id] === "Sending..."}
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  sendToFumigarasu(idea);
+                                }}
+                              >
+                                <FileOutput className="size-4" aria-hidden="true" />
+                                Send to Fumigarasu
+                              </Button>
+                              <span className="text-muted-foreground" role="status" aria-live="polite">
+                                {handoffState[idea.id] || ""}
+                              </span>
+                            </div>
                             <div className="flex flex-wrap gap-1.5 pt-1">
                               {idea.tags.map((tag) => (
                                 <Badge key={tag} variant="outline">{tag}</Badge>

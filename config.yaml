@@ -34,10 +34,29 @@ theme_schedule:
   sunday: mixed
 
 output:
-  data_path: "C:/Code/asagiri/data"
-  vault_ideas_path: "D:/Obsidian/br-os-vault/_startup_radar/ideas"
+  data_path: "C:/Code/products/002-asagiri/data"
+  vault_ideas_path: "D:/Obsidian/br-os-vault/_asagiri/ideas"
   generate_markdown: true
   generate_json: true
+
+# Agent-chain config. Presence of this section switches main.py to the
+# new dispatch path (search.py + agents.py). Remove or comment out to
+# fall back to the legacy `llm:` SDK path above.
+#
+# Tier table (hand-curated quality estimate):
+#   claude (Claude Code, Sonnet 4.6 / Opus 4.7) = 10
+#   codex  (codex-cli, GPT-5.5)                 =  9
+#   gemini (gemini-cli, Flash default)          =  7
+#   ollama (local model, varies)                =  6
+#
+# Defaults: min_tier=8 admits claude + codex only. Lower to 7 to add
+# gemini, to 6 to add ollama (also requires OLLAMA_MODEL env var).
+agents:
+  min_tier: 8
+  consensus: true   # run Claude + Codex, then synthesize one final JSON
+  search_n: 8         # number of SearXNG snippets pulled per idea
+  dispatch_timeout: 180  # subprocess timeout per CLI agent call (seconds)
+  # ollama_model: "qwen2.5:7b"  # uncomment to include local ollama in chain
 
 # Purpose lens: abstract values that guide idea generation.
 # Each day, one is selected as the primary lens (80% of ideas).
@@ -55,3 +74,7 @@ purpose:
 search:
   max_sources_per_idea: 3
   language: "en"
+
+seeds:
+  ideabrowser_path: "C:/Code/products/002-asagiri/data/ideabrowser-seeds/ideabrowser-opportunity-seeds.jsonl"
+  max_items_per_domain: 3
